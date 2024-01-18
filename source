@@ -1,0 +1,179 @@
+#!/usr/bin/env python
+import os, platform, random, socket, sys, subprocess
+sys.path.append(f"{os.path.expanduser('~')}/.config/bunnydelic/"); from config import *
+
+'''
+/////////////// STYLES //////////////
+'''
+asciiisdefault=True;  #was the default_ascii replaced?
+
+# so basically here i manage the colors and ascii art
+end = "\033[0m"; bold= "\033[1m"; c1=""; c2="";c3="";c4=""
+line= "\033[4m"; ital= "\033[3m"; f1=""; f2="";f3="";f4=""
+
+fg={ #normal foreground colors
+    "red":  "\033[0;31m",   "grn":  "\033[0;32m",   
+    "ylw":  "\033[0;33m",	"ble":  "\033[0;34m",
+    "prp":  "\033[0;35m",	"cyn":  "\033[0;36m",
+    "wht":  "\033[0;37m",   "blk":  "\033[0;30m",   
+}
+bg={ #normal background colors that paints a two-spaced square
+    "red":"\033[0;41m  \033[0m", "grn":"\033[0;42m  \033[0m",
+    "ylw":"\033[0;43m  \033[0m", "ble":"\033[0;44m  \033[0m",
+    "prp":"\033[0;45m  \033[0m", "cyn":"\033[0;46m  \033[0m",
+    "wht":"\033[0;47m  \033[0m", "blk":"\033[0;40m  \033[0m",
+}
+faces={ #56 in total, feel freee to add more if you want
+    "a1":"- -", "a2":"-_-", "a3":"-u-", "a4":"-o-", "a5":"-w-", "a6":"-.-", "a7":"-^-",
+    "b1":"'-'", "b2":"'_'", "b3":"'u'", "b4":"'o'", "b5":"'w'", "b6":"'.'", "b7":"'^'",
+    "c1":"O-o", "c2":"O_o", "c3":"Ouo", "c4":"O O", "c5":"OwO", "c6":"O.O", "c7":"O^O",
+    "d1":"U-u", "d2":"U_u", "d3":"U U", "d4":"Uou", "d5":"Uwu", "d6":"U.u", "d7":"U^u",
+    "e1":">-<", "e2":">_<", "e3":">u<", "e4":">o<", "e5":">w<", "e6":">.<", "e7":">^<",
+    "f1":"T-T", "f2":"T_T", "f3":"TuT", "f4":"ToT", "f5":"TwT", "f6":"T.T", "f7":"T^T",
+    "g1":"7-7", "g2":"7_7", "g3":"7u7", "g4":"7o7", "g5":"7w7", "g6":"7.7", "g7":"7^7",
+    "h1":"^-^", "h2":"^_^", "h3":"^u^", "h4":"^o^", "h5":"^w^", "h6":"^.^", "h7":"^ ^",
+}
+distros={ #Robotition suggested this, thank him :>
+    "Arch Linux":"",        "Debian GNU/Linux":"",  "EndeavourOS":"",   "Manjaro Linux":"󱘊",     "NixOS":"",
+    "Ubuntu":"",            "Pop!_OS":"",           "Fedora":"󰣛",        "Crystal Linux":"",     "Void Linux":"",
+    "Kali GNU/Linux":"",    "Rocky Linux":"",       "Linux Mint":"󰣭",    "AlmaLinux":"",         "Alphine Linux":"",
+    "Archcraft":"",         "ArchLabs":"",          "ArcoLinux":"",     "Artix Linux":"",       "BigLinux":"",
+    "CentOS Linux":"",      "Devuan GNU/Linux":"",  "elementary OS":"", "Hyperbola GNU/Linux-libre":"",
+    "MX Linux":"",          "openSUSE":"",          "Void":"",          "Zorin OS":"",          "Trisquel GNU/Linux":"",
+    "Garuda Linux":"",      "Gentoo Linux":"",      "Loc-os":"",        "Parabola GNU/Linux-libre":"",
+    "Puppy Linux":"",       "Parrot":"",            "Linux":"",
+}
+
+#somehow randomize colors to print into default_ascii
+keys_list = list(fg.keys()); random.shuffle(keys_list)
+face_list = list(faces.keys()); random.shuffle(face_list)
+c1 = fg[keys_list[0]];  f1 = faces[face_list[0]]
+c2 = fg[keys_list[1]];  f2 = faces[face_list[1]]
+c3 = fg[keys_list[2]];  f3 = faces[face_list[2]]
+c4 = fg[keys_list[3]];  f4 = faces[face_list[3]]
+
+#default ascii art (do not touch pls)
+default_ascii=f'''
+(\ /)    (\ /)  
+( {f1})   ( {f2}) 
+c({c1}"{end})({c1}"{end})  c({c2}"{end})({c2}"{end})
+                
+(\ /)    (\ /)  
+( {f3})   ( {f4}) 
+c({c3}"{end})({c3}"{end})  c({c4}"{end})({c4}"{end})
+'''
+
+if prioritize_ascii=="default": pass
+if prioritize_ascii=="custom":
+    if not custom_ascii: pass;
+    else:#also ensures length uniformity in custom_ascii
+        newascii = custom_ascii.strip().split('\n')
+        max_length = max(len(line) for line in newascii)
+        newFormat=[line.ljust(max_length, ' ') for line in newascii]; #!!!
+        default_ascii = "" + '\n'.join(newFormat) + '\n'
+        asciiisdefault=False
+
+'''
+/////////////// FETCH //////////////
+'''
+
+#split each line of ascii art and stores into a variable
+ascii_lines= default_ascii.split('\n'); 
+max_lines =  0; #vertical length of the fetch
+#spacer for horizontal empty lines at the end of ascii art if it ended
+spacer=" " * max(len(line) for line in ascii_lines) if asciiisdefault==False else " " * 16
+#randomize colors and matching them
+fgkey = list(fg.keys()); random.shuffle(fgkey)
+bgkey = list(bg.keys())
+bgkey = [bg_key for fg_key in fgkey for bg_key in bg if fg_key == bg_key]
+
+# functions to fetch information
+def get_user(): return os.getlogin()
+def get_host(): return socket.gethostname()
+def get_sh(): return os.environ.get('SHELL')
+def get_wm(): return os.environ.get('XDG_SESSION_DESKTOP')
+def get_kern(): return f"{platform.uname().release}"
+def get_os():
+    with open('/etc/os-release', 'r') as file:
+        for line in file:
+            if line.startswith('NAME='): return line.split('=')[1].strip().strip('"')
+def get_upt(): 
+    with open('/proc/uptime', 'r') as file:
+        uptime_seconds = int(float(next(file).split()[0]))
+        uptime_hours, uptime_minutes = divmod(uptime_seconds // 60, 60)
+        return f"{uptime_hours} hours, {uptime_minutes} minutes"
+def get_pkg():
+   if os.path.exists('/etc/pacman.conf'):
+       return len(os.popen("pacman -Qq").readlines())
+   elif os.path.exists('/etc/apt/sources.list') or os.path.exists('/etc/apt'): 
+       result = subprocess.run(['dpkg', '-l'], capture_output=True, text=True)
+       return len(result.stdout.splitlines()) - 5 #substract header file
+   elif os.path.exists('/etc/dnf/dnf.conf') or os.path.exists('/etc/yum'): 
+       result = subprocess.run(['dnf', 'list', 'installed'], capture_output=True, text=True)
+       return len(result.stdout.splitlines()) - 1 #substract header file
+   else: return "unsupported"
+
+if override_distro_icon is True:
+    your_distro=get_os()
+    for item in distros:
+        if item==your_distro: icons[0]=distros[item]
+        else: pass
+else: pass
+
+#this is a LIST of every line to print
+info_lines=f'''{somephrases[random.randint(0,len(somephrases)-1)]}
+{bg[bgkey[0]]} {fg[fgkey[0]]}{icons[0]}  OS:       {end} {get_os()} 
+{bg[bgkey[1]]} {fg[fgkey[1]]}{icons[1]}  Host:     {end} {get_host()} {get_user()}
+{bg[bgkey[3]]} {fg[fgkey[3]]}{icons[2]}  Kernel:   {end} {get_kern()} 
+{bg[bgkey[2]]} {fg[fgkey[2]]}{icons[3]}  DE:       {end} {get_wm()}
+{bg[bgkey[4]]} {fg[fgkey[4]]}{icons[4]}  Pkgs:     {end} {get_pkg()}
+{bg[bgkey[5]]} {fg[fgkey[5]]}{icons[5]}  Shell:    {end} {get_sh()} 
+{bg[bgkey[6]]} {fg[fgkey[6]]}{icons[6]}  Uptime:   {end} {get_upt()}
+'''.split('\n')
+
+dictOfLines={
+    "os":info_lines[1],     "host":info_lines[2],   
+    "kernel":info_lines[3], "de":info_lines[4],     
+    "pkg":info_lines[5],    "shell":info_lines[6],  
+    "uptime":info_lines[7]
+}
+
+#MAIN METHOD
+if __name__=="__main__":
+    #Sort the information as "display" variable
+    info_lines=info_lines[:1]; #exclude the first line
+    for item in display:
+        info_lines.append(dictOfLines[item.lower()])
+
+    #remove nerd font icons
+    if show_icons is True: pass
+    else:#removes the glyph +1 empty space
+        for i in range(1, len(info_lines)):
+            info_lines[i] = info_lines[i][:21] + info_lines[i][24:]
+
+    # what to show if ascii is removed
+    if show_ascii is False:
+        info_lines=info_lines[1:] if show_phrase==False else info_lines
+        max_lines = len(info_lines)+1;
+        for i in range(max_lines):
+            left_column  = ascii_lines[i] if i < len(ascii_lines) else ''
+            right_column = info_lines[i]  if i < len(info_lines)  else ''
+            print(f"{right_column}")
+
+    else:#show_ascii==True
+        if show_phrase is False:
+            info_lines = info_lines[1:]
+            ascii_lines= ascii_lines[1:] if asciiisdefault is True else ascii_lines
+        max_lines = len(ascii_lines) if len(ascii_lines) > len(info_lines) else len(info_lines)+1
+
+        for i in range(max_lines):
+            left_column  = ascii_lines[i] if i < len(ascii_lines) else spacer
+            right_column = info_lines[i]  if i < len(info_lines)  else ''
+            if i==0:
+                if asciiisdefault==True and show_phrase==True: print(f"{left_column}{right_column}")
+                else:  print(f"{left_column}   {right_column}")
+            else:
+                if len(left_column)==0: print(f"{spacer}   {right_column}")
+                else: print(f"{left_column}   {right_column}")
+
+
