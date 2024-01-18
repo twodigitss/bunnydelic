@@ -18,7 +18,7 @@ https://github.com/Rosettea/bunnyfetch.
 1. Clone the repo locally with ` git clone `<br>
 2. Change directory to the folder with ` cd `<br>
 3. Install as binary with  `make install`<br>
-4. Run as  `kfetch`<br>
+4. Run as  `bunnydelic`<br>
 5. For uninstalling use `make uninstall`<br>
 
 ## Supported distros
