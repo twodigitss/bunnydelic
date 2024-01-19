@@ -8,11 +8,14 @@
     
     EXTRA: if you are facing problems with blank spaces in custom ascii, take this
     empty char made for filling some ascii arts, it will surely fix it
-    emptychar="⠀"
+    emptychars="⠀⠀⠀⠀⠀⠀"
 
 '''
 #Enables/disables random phrases at the top of the fetch
 show_phrase=True
+
+#Indent the phrase to left instead right on custom ascii
+phraseToLeft=False
 
 #Enables/disables every ascii art
 show_ascii=True
@@ -28,6 +31,13 @@ icons=["","","󰒔","󰙀","󰏓","",""]
 
 #Shows in order what information is displayed
 display=["os","host","kernel","de","pkg","shell","uptime"]
+
+#Enable/disable normal behavior of this app
+randomize_colors=True
+
+#If randomize_colors is false, you can set the order of the colors
+#this column is:  os    host   krn   de   pkg    sh    upt   NA
+static_color_set=["cyn","ble","blk","red","prp","grn","wht","ylw"]
 
 #Values: ["custom" or "default"]
 prioritize_ascii="default"

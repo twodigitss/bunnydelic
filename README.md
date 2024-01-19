@@ -17,9 +17,9 @@ https://github.com/Rosettea/bunnyfetch.
 ## Instructions
 1. Clone the repo locally with ` git clone `<br>
 2. Change directory to the folder with ` cd `<br>
-3. Install as binary with  `make install`<br>
-4. Run as  `bunnydelic`<br>
-5. For uninstalling use `make uninstall`<br>
+3. Install as binary with  ` make install `<br>
+4. Run as  ` bunnydelic `<br>
+5. For uninstalling use ` make uninstall `<br>
 
 ## Supported distros
 - Arch linux and derivated distros
@@ -40,8 +40,8 @@ https://github.com/Rosettea/bunnyfetch.
 + make an deb package when it's stable
 
 ## Author notes
-why this name? well, it has bunnies and "delic" comes from an old username of mine, that also matches "psychodelic", 
-whose colors are always changing. <br>
+why this name? well, it has bunnies and "delic" comes from "psychodelic", 
+whose colors are always changing, and also match for an old username i had.<br>
 This fetch uses colors of your system to colorize the output.
 I recommend to use a colorscheme for your Xresources file, like rosepine, dracula, nord, etc. <br>
 It also may look weird depending of the font, monospace looks weird. I recommend nerd fonts or some other.<br> 
