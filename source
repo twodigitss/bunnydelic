@@ -5,9 +5,15 @@ sys.path.append(f"{os.path.expanduser('~')}/.config/bunnydelic/"); from config i
 ''' /////////////// STYLES ////////////// '''
 
 asciiisdefault=True;  #was the default_ascii replaced?
+if show_phrase is False: phraseToLeft=False; 
+else: pass
 end = "\033[0m"; bold= "\033[1m"; c1=""; c2="";c3="";c4=""
 line= "\033[4m"; ital= "\033[3m"; f1=""; f2="";f3="";f4=""
 
+colorkeywords={ #used to read vars from config file
+    "red":"red", "blue":"ble", "green":"grn", "yellow":"ylw", 
+    "purple":"prp", "cyan":"cyn", "white":"wht", "black":"blk"
+}
 fg={ #normal foreground colors
     "red":  "\033[0;31m",   "grn":  "\033[0;32m",   
     "ylw":  "\033[0;33m",   "ble":  "\033[0;34m",
@@ -45,9 +51,11 @@ distros={ #Robotition suggested this, thank him :>
 fg_list = list(fg.keys()); bgkey = list(bg.keys())
 face_list = list(faces.keys()); random.shuffle(face_list)
 if randomize_colors: random.shuffle(fg_list)
-else: fg_list = [color for color in static_color_set]
+else: fg_list = [colorkeywords[color] for color in static_color_set]
 #match bgkey with the order set in fg_list
 bgkey = [bg_key for fg_key in fg_list for bg_key in bg if fg_key == bg_key]
+bgblocks="".join([bg[bg_key] for fg_key in fg_list for bg_key in bg if fg_key == bg_key])
+
 c1 = fg[fg_list[0]];  f1 = faces[face_list[0]]
 c2 = fg[fg_list[1]];  f2 = faces[face_list[1]]
 c3 = fg[fg_list[2]];  f3 = faces[face_list[2]]
@@ -64,8 +72,8 @@ c({c1}"{end})({c1}"{end})  c({c2}"{end})({c2}"{end})
 c({c3}"{end})({c3}"{end})  c({c4}"{end})({c4}"{end})
 '''
 
-if prioritize_ascii=="default": pass
-if prioritize_ascii=="custom":
+if show_ascii=="default": pass
+if show_ascii=="custom":
     if not custom_ascii: pass;
     else:#also ensures length uniformity in custom_ascii
         newascii = custom_ascii.strip().split('\n')
@@ -77,21 +85,41 @@ if prioritize_ascii=="custom":
 
 ''' /////////////// FETCH ////////////// '''
 
-#split each line of ascii art and stores into a variable
+# Array with each life of ascii art and a custom auto-adjustable spacer
 ascii_lines= default_ascii.split('\n'); max_lines =  0;
-#spacer for horizontal empty lines at the end of ascii art if it ended
 spacer=" " * max(len(line) for line in ascii_lines) if not asciiisdefault else " " * 16
 
 # functions to fetch information
 def get_user(): return os.getlogin()
 def get_host(): return socket.gethostname()
 def get_sh(): return os.environ.get('SHELL')
-def get_wm(): return os.environ.get('XDG_SESSION_DESKTOP')
+def get_de(): 
+    if os.environ.get('XDG_CURRENT_DESKTOP') is None: 
+        return os.environ.get('XDG_SESSION_DESKTOP')
+    else: return os.environ.get('XDG_CURRENT_DESKTOP')
 def get_kern(): return f"{platform.uname().release}"
 def get_os():
-    with open('/etc/os-release', 'r') as file:
-        for line in file:
-            if line.startswith('NAME='): return line.split('=')[1].strip().strip('"')
+    return subprocess.run(
+    "grep '^NAME=' /etc/os-release | awk -F '=' '{print $2}' | tr -d '\"'", 
+    shell=True, capture_output=True, text=True).stdout.strip()
+def get_cpu():
+    return subprocess.run(
+    "lscpu | awk '/Model name/ {print $3, $4, $5, $6}'", 
+    shell=True, capture_output=True, text=True).stdout.strip()
+def get_ram():
+    ram_all=subprocess.run("free -h | awk '/^Mem/ {print $2}'", 
+    shell=True, capture_output=True, text=True).stdout.strip()
+    ram_use=subprocess.run("free -h | awk '/^Mem/ {print $3}'", 
+    shell=True, capture_output=True, text=True).stdout.strip()
+    return f"{ram_use} ~ {ram_all}"
+def get_hdw():
+    return subprocess.run(
+    "cat /sys/class/dmi/id/product_name", 
+    shell=True, capture_output=True, text=True).stdout.strip()
+def get_gpu():
+    return subprocess.run(
+    "lspci | grep -iE 'VGA|3D|Display' | awk -F '[:[:space:]]+' '{print $6,$7,$8,$9,$10}'", 
+    shell=True, capture_output=True, text=True).stdout.strip()
 def get_upt(): 
     with open('/proc/uptime', 'r') as file:
         uptime_seconds = int(float(next(file).split()[0]))
@@ -117,55 +145,113 @@ else: pass
 
 #this is a LIST of every line to print
 info_lines=f'''{somephrases[random.randint(0,len(somephrases)-1)]}
-{bg[bgkey[0]]} {fg[fg_list[0]]}{icons[0]}  OS:       {end} {get_os()} 
-{bg[bgkey[1]]} {fg[fg_list[1]]}{icons[1]}  Host:     {end} {get_host()} {get_user()}
-{bg[bgkey[2]]} {fg[fg_list[2]]}{icons[2]}  Kernel:   {end} {get_kern()} 
-{bg[bgkey[3]]} {fg[fg_list[3]]}{icons[3]}  DE:       {end} {get_wm()}
-{bg[bgkey[4]]} {fg[fg_list[4]]}{icons[4]}  Pkgs:     {end} {get_pkg()}
-{bg[bgkey[5]]} {fg[fg_list[5]]}{icons[5]}  Shell:    {end} {get_sh()} 
-{bg[bgkey[6]]} {fg[fg_list[6]]}{icons[6]}  Uptime:   {end} {get_upt()}
+{icons[0]}  Distro:   {end}{get_os()} 
+{icons[1]}  Owner:    {end}{get_host()} {get_user()}
+{icons[2]}  Kernel:   {end}{get_kern()} 
+{icons[3]}  Desk:     {end}{get_de()}
+{icons[4]}  Pkgs:     {end}{get_pkg()}
+{icons[5]}  Shell:    {end}{get_sh()} 
+{icons[6]}  Uptime:   {end}{get_upt()}
+{icons[7]}  Ram:      {end}{get_ram()}
+{icons[8]}  Cpu:      {end}{get_cpu()}
+{icons[9]}  Device:   {end}{get_hdw()}
+{icons[10]}  Graphic:  {end}{get_gpu()}
+{icons[11]}  User:     {end}{get_user()}
+{icons[12]}  Host:     {end}{get_host()}
 '''.split('\n')
 
 dictOfLines={
-    "os":info_lines[1],     "host":info_lines[2],   
-    "kernel":info_lines[3], "de":info_lines[4],     
-    "pkg":info_lines[5],    "shell":info_lines[6],  
-    "uptime":info_lines[7] }
+    "distro":info_lines[1], "owner":info_lines[2],   "kernel":info_lines[3], 
+    "de":info_lines[4],     "pkg":info_lines[5],     "shell":info_lines[6],      
+    "uptime":info_lines[7], "ram": info_lines[8],    "cpu":info_lines[9],    
+    "gpu": info_lines[11],  "user": info_lines[12],  "host": info_lines[13],  
+    "model":info_lines[10],
+}
 
 #MAIN METHOD
 if __name__=="__main__":
     #Sort the information as "display" variable
     info_lines=info_lines[:1]; #exclude the first line
     for item in display:
-        info_lines.append(dictOfLines[item.lower()])
+        if item in dictOfLines: info_lines.append(dictOfLines[item.lower()])
+        else: pass
 
     #remove nerd font icons
     if show_icons is True: pass
-    else:#removes the glyph +1 empty space
+    else:#removes the glyph + empty spaces
         for i in range(1, len(info_lines)):
-            info_lines[i] = info_lines[i][:21] + info_lines[i][23:]
+            info_lines[i] = info_lines[i][3:]
+
+    if color_block_position=="bottom":
+        info_lines=info_lines+[f"{end}"]+[f"{bgblocks}"]
+    else: pass
 
     # what to show if ascii is removed
-    if show_ascii is False:
+    if show_ascii == "off":
         info_lines=info_lines[1:] if not show_phrase else info_lines
         max_lines = len(info_lines)+1;
         for i in range(max_lines):
-            right_column = info_lines[i]  if i < len(info_lines)  else ''
-            print(f"{right_column}")
+            info_column = info_lines[i]  if i < len(info_lines)  else ''
+            
+            if color_block_position=="left": #LEFT 
+                if not show_phrase:
+                      fg_column=f"{bg[bgkey[i]]} {fg[fg_list[i]]}"   if i < len(bgkey) else f'{bg["wht"]} {fg["wht"]}'
+                else: fg_column=f"{bg[bgkey[i-1]]} {fg[fg_list[i-1]]}" if i < len(bgkey)+1 else f'{bg["wht"]} {fg["wht"]}'
+            elif color_block_position=="bottom" or color_block_position=="off": #DOWN
+                if not show_phrase: 
+                      fg_column=f"{fg[fg_list[i]]}"   if i < len(bgkey) else f'{fg["wht"]}'
+                else: fg_column=f"{fg[fg_list[i-1]]}"   if i < len(bgkey)+1 else f'{fg["wht"]}'
+            else: fg_column="invalid choice"
 
-    else:#show_ascii==True
+            if i==0: print(f"{fg_column}{info_column}" if not show_phrase else f"{info_column}")
+            else: 
+                if not info_column:
+                    if   color_block_position=="left" or color_block_position=="off": print(f"")
+                    elif color_block_position=="bottom": print(f"{fg_column}{info_column}")
+                else: print(f"{fg_column}{info_column}")
+
+    else:# show whatever ascii if no set "off"
         if show_phrase is False:
             info_lines = info_lines[1:]
             ascii_lines= ascii_lines[1:] if asciiisdefault else ascii_lines
         max_lines = len(ascii_lines) if len(ascii_lines) > len(info_lines) else len(info_lines)+1
 
         for i in range(max_lines):
-            left_column  = ascii_lines[i] if i < len(ascii_lines) else spacer
-            right_column = info_lines[i]  if i < len(info_lines)  else ''
-            if i==0:
-                if (asciiisdefault and show_phrase) or phraseToLeft: 
-                    print(f"{left_column}{right_column}")
-                else: print(f"{left_column}   {right_column}")
-            else:
-                if len(left_column)==0: print(f"{spacer}   {right_column}")
-                else: print(f"{left_column}   {right_column}")
+            ascii_column  = ascii_lines[i] if i < len(ascii_lines) else spacer
+            info_column = info_lines[i]  if i < len(info_lines)  else ''
+            #dude, how the hell is this long? i seriously need to optimize this somehow
+            if color_block_position=="left": #LEFT 
+                if not show_phrase:
+                      fg_column=f"{bg[bgkey[i]]} {fg[fg_list[i]]}"   if i < len(bgkey) else f'{bg["wht"]} {fg["wht"]}'
+                else: fg_column=f"{bg[bgkey[i-1]]} {fg[fg_list[i-1]]}" if i < len(bgkey)+1 else f'{bg["wht"]} {fg["wht"]}'
+            elif color_block_position=="bottom" or color_block_position=="off": #DOWN
+                if not show_phrase: 
+                      fg_column=f"{fg[fg_list[i]]}"   if i < len(bgkey) else f'{fg["wht"]}'
+                else: fg_column=f"{fg[fg_list[i-1]]}"   if i < len(bgkey)+1 else f'{fg["wht"]}'
+            else: fg_column=""
+            
+            if i==0:# DO NO forget that this instruction is for printing only the phrase
+                if show_phrase:
+                    if asciiisdefault or phraseToLeft: print(f"{ascii_column}{info_column}")
+                    else: print(f"{ascii_column}   {info_column}")
+                else: print(f"{ascii_column}   {fg_column}{info_column}")
+            
+            else:# From here prints the body
+                if ascii_column:
+                    if not info_column:
+                        if color_block_position=="left" or color_block_position=="off": 
+                            print(f"{ascii_column}");
+                        elif color_block_position=="bottom": 
+                            print(f"{ascii_column}   {fg_column}{info_column}"); #ADDED MIDDLE COLUMN
+                            #else: print("\n"+f"{spacer}   {bgblocks}"+"\n")
+                    else: print(f"{ascii_column}   {fg_column}{info_column}");# si no hay info el fg si se imprime
+                
+                else:
+                    if color_block_position=="left" or color_block_position=="off": 
+                        if info_column: print(f"{spacer}   {fg_column}{info_column}")
+                        else: print(f"{spacer}   ")
+                    elif color_block_position=="bottom": 
+                        if info_column: print(f"{spacer}   {fg_column}{info_column}"); 
+                        else: print("")
+                    else: print(f"{ascii_column}   {fg_column}{info_column}")
+                    
