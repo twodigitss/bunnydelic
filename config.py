@@ -7,11 +7,6 @@
     empty chars made for filling some ascii arts, it will surely fix it
     emptychars="⠀⠀⠀⠀⠀⠀"
 
-    added:  more information available to display
-            now you can choose the position of the color blocks
-            improved static color set behavior, 
-            improved show_ascii parameters for more flexibility
-            color bug on "bottom" mode fixed 
 '''
 
 #Enables/disables phrases
