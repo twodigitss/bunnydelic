@@ -9,6 +9,18 @@ phraseToLeft=False if show_phrase is False else phraseToLeft
 end = "\033[0m"; bold= "\033[1m"; c1=""; c2="";c3="";c4=""
 line= "\033[4m"; ital= "\033[3m"; f1=""; f2="";f3="";f4=""
 
+phrStyle=phrasestyles={ #phrase formatting style
+	"normal":end, "italic":ital, "bold":bold, "underline":line
+	}.get(phraseStyle)
+
+colStyle=styles={ #colored information style
+	"normal":"", "italic":ital, "bold":bold, "underline":line
+	}.get(displayStyle)
+
+infoStyle=styles={ #information formatting style
+	"normal":end, "italic":ital, "bold":bold, "underline":line
+	}.get(informationStyle)
+
 colorkeywords={ #used to read vars from config file
     "red":"red", "blue":"ble", "green":"grn", "yellow":"ylw", 
     "purple":"prp", "cyan":"cyn", "white":"wht", "black":"blk"
@@ -16,7 +28,7 @@ colorkeywords={ #used to read vars from config file
 fg={ #normal foreground colors
     "red":  "\033[0;31m",   "grn":  "\033[0;32m",   
     "ylw":  "\033[0;33m",   "ble":  "\033[0;34m",
-    "prp":  "\033[0;35m",	"cyn":  "\033[0;36m",
+    "prp":  "\033[0;35m",   "cyn":  "\033[0;36m",
     "wht":  "\033[0;37m",   "blk":  "\033[0;30m",   
 }
 bg={ #normal background colors that paints a two-spaced square
@@ -26,15 +38,15 @@ bg={ #normal background colors that paints a two-spaced square
     "wht":"\033[0;47m  \033[0m", "blk":"\033[0;40m  \033[0m",
 }
 faces={ #feel freee to add more if you want
-    "a1":"- -", "a2":"-_-", "a3":"-u-", "a4":"-o-", "a5":"-w-", "a6":"-.-", "a7":"-v-",
-    "b1":"'-'", "b2":"'·'", "b3":"'u'", "b4":"'o'", "b5":"'w'", "b6":"'.'", "b7":"'^'", "b8":"' '",
-    "c1":"O-o", "c2":"O_o", "c3":"OuO", "c4":"O O", "c5":"OwO", "c6":"O.o", "c7":"O^o", "c8":"O o",
-    "d1":"U-u", "d2":"U_u", "d3":"U U", "d4":"Uou", "d5":"Uwu", "d6":"U.u", "d7":"U^u", "d8":"U u",
-    "e1":">-<", "e2":">_<", "e3":">u<", "e4":">o<", "e5":">w<", "e6":">.<", "e7":">^<", "e8":"> <",
-    "f1":"T-T", "f2":"T_T", "f3":"TuT", "f4":"ToT", "f5":"TwT", "f6":"T.T", "f7":"T^T", "f8":"T T",
-    "g1":"7-7", "g2":"7_7", "g3":"7u7", "g4":"7o7", "g5":"7w7", "g6":"7.7", "g7":"7^7", "g8":"7 7",
-    "h1":"^-^", "h2":"^_^", "h3":"^u^", "h4":"^o^", "h5":"^w^", "h6":"^.^", "h7":"^ ^", "h8":"^ ^",
-    "i1":"·-·", "i2":"·_·", "i3":"·u·",             "i5":"·w·", "i6":"·.·", "i7":"·^·", "i8":"· ·",
+    "a1":"- -", "a2":"-_-", "a3":"-u-", "a4":"-o-", "a5":"-w-", "a6":"-.-", "a7":"-v-", "a8":"-~-",
+    "b1":"'-'", "b2":"'·'", "b3":"'u'", "b4":"'o'", "b5":"'w'", "b6":"'.'", "b7":"'^'", "b8":"'~'",
+    "c1":"O-o", "c2":"O_o", "c3":"OuO", "c4":"O O", "c5":"OwO", "c6":"O.o", "c7":"O^o", "c8":"O~o",
+    "d1":"U-u", "d2":"U_u", "d3":"U U", "d4":"Uou", "d5":"Uwu", "d6":"U.u", "d7":"U^u", "d8":"U~u",
+    "e1":">-<", "e2":">_<", "e3":">u<", "e4":">o<", "e5":">w<", "e6":">.<", "e7":">^<", "e8":">~<",
+    "f1":"T-T", "f2":"T_T", "f3":"TuT", "f4":"ToT", "f5":"TwT", "f6":"T.T", "f7":"T^T", "f8":"T~T",
+    "g1":"7-7", "g2":"7_7", "g3":"7u7", "g4":"7o7", "g5":"7w7", "g6":"7.7", "g7":"7^7", "g8":"7~7",
+    "h1":"^-^", "h2":"^_^", "h3":"^u^", "h4":"^o^", "h5":"^w^", "h6":"^.^", "h7":"^ ^", "h8":"^~^",
+    "i1":"·-·", "i2":"·_·", "i3":"·u·", "i4":"·o·", "i5":"·w·", "i6":"·.·", "i7":"·^·", "i8":"·~·",
     
 }
 distros={ #Robotition suggested this, thank him :>
@@ -156,27 +168,27 @@ if override_distro_icon is True: #else pass
         if item==your_distro: icons[0]=distros[item]
 
 #this is a LIST of every line to print
-info_lines=f'''{ital}{somephrases[random.randint(0,len(somephrases)-1)]}{end}
-{icons[0 ]}  Distro:   {end}{get_os("pretty_name")}
-{icons[1 ]}  Owner:    {end}{get_host()} {get_user()}
-{icons[2 ]}  Kernel:   {end}{get_kern()}
-{icons[3 ]}  Desk:     {end}{get_de()}
-{icons[4 ]}  Pkgs:     {end}{get_pkg()}
-{icons[5 ]}  Shell:    {end}{get_sh()}
-{icons[6 ]}  Uptime:   {end}{get_upt()}
-{icons[7 ]}  Ram:      {end}{get_ram()}
-{icons[8 ]}  Cpu:      {end}{get_cpu()}
-{icons[9 ]}  Device:   {end}{get_hdw()}
-{icons[10]}  Graphics: {end}{get_gpu()}
-{icons[11]}  User:     {end}{get_user()}
-{icons[12]}  Host:     {end}{get_host()}
+info_lines=f'''{phrStyle}{somephrases[random.randint(0,len(somephrases)-1)]}{end}
+{icons[0 ]}  {colStyle}Distro:{end}   {infoStyle}{get_os("pretty_name")}{end}
+{icons[1 ]}  {colStyle}Owner:{end}    {infoStyle}{get_host()} {get_user()}{end}
+{icons[2 ]}  {colStyle}Kernel:{end}   {infoStyle}{get_kern()}{end}
+{icons[3 ]}  {colStyle}Desk:{end}     {infoStyle}{get_de()}{end}
+{icons[4 ]}  {colStyle}Pkgs:{end}     {infoStyle}{get_pkg()}{end}
+{icons[5 ]}  {colStyle}Shell:{end}    {infoStyle}{get_sh()}{end}
+{icons[6 ]}  {colStyle}Uptime:{end}   {infoStyle}{get_upt()}{end}
+{icons[7 ]}  {colStyle}Ram:{end}      {infoStyle}{get_ram()}{end}
+{icons[8 ]}  {colStyle}Cpu:{end}      {infoStyle}{get_cpu()}{end}
+{icons[9 ]}  {colStyle}Device:{end}   {infoStyle}{get_hdw()}{end}
+{icons[10]}  {colStyle}Graphs:{end}   {infoStyle}{get_gpu()}{end}
+{icons[11]}  {colStyle}User:{end}     {infoStyle}{get_user()}{end}
+{icons[12]}  {colStyle}Host:{end}     {infoStyle}{get_host()}{end}
 '''.split('\n')
 
 dictOfLines={
-    "distro":info_lines[1], "owner":info_lines[2],   "kernel":info_lines[3], 
-    "de":info_lines[4],     "pkg":info_lines[5],     "shell":info_lines[6],      
-    "uptime":info_lines[7], "ram": info_lines[8],    "cpu":info_lines[9],    
-    "gpu": info_lines[11],  "user": info_lines[12],  "host": info_lines[13],  
+    "distro":info_lines[1], "owner":info_lines[2],  "kernel":info_lines[3], 
+    "de":info_lines[4],     "pkg":info_lines[5],    "shell":info_lines[6],      
+    "uptime":info_lines[7], "ram": info_lines[8],   "cpu":info_lines[9],    
+    "gpu": info_lines[11],  "user": info_lines[12], "host": info_lines[13],  
     "model":info_lines[10],
 }
 
