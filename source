@@ -51,7 +51,7 @@ faces={ #feel freee to add more if you want
 }
 distros={ #Robotition suggested this, thank him :>
     "Arch Linux":"",        "Debian GNU/Linux":"",  "EndeavourOS":"",   "Manjaro Linux":"󱘊",     "Parrot":"",
-    "Ubuntu":"",            "Pop!_OS":"",           "Fedora":"󰣛",        "Crystal Linux":"",     "Zorin OS":"",
+    "Ubuntu":"",            "Pop!_OS":"",           "Fedora Linux":"󰣛",        "Crystal Linux":"",     "Zorin OS":"",
     "Kali GNU/Linux":"",    "Rocky Linux":"",       "Linux Mint":"󰣭",    "AlmaLinux":"",         "MX Linux":"",
     "Archcraft":"",         "ArchLabs":"",          "ArcoLinux":"",     "Artix Linux":"",       "BigLinux":"",
     "CentOS Linux":"",      "Devuan GNU/Linux":"",  "elementary OS":"", "Garuda Linux":"",      "Loc-os":"",
@@ -75,11 +75,11 @@ c4 = fg[fg_list[3]];  f4 = faces[face_list[3]]
 
 #default ascii art (do not touch pls)
 default_ascii=f'''
-(\ /)    (\ /)  
+(\\ /)    (\\ /)  
 ( {f1})   ( {f2}) 
 c({c1}"{end})({c1}"{end})  c({c2}"{end})({c2}"{end})
                 
-(\ /)    (\ /)  
+(\\ /)    (\\ /)  
 ( {f3})   ( {f4}) 
 c({c3}"{end})({c3}"{end})  c({c4}"{end})({c4}"{end})
 '''
@@ -169,7 +169,7 @@ if override_distro_icon is True: #else pass
 
 #this is a LIST of every line to print
 info_lines=f'''{phrStyle}{somephrases[random.randint(0,len(somephrases)-1)]}{end}
-{icons[0 ]}  {colStyle}Distro:{end}   {infoStyle}{get_os("pretty_name")}{end}
+{icons[0 ]}  {colStyle}Distro:{end}   {infoStyle}{get_os("name")}{end}
 {icons[1 ]}  {colStyle}Owner:{end}    {infoStyle}{get_host()} {get_user()}{end}
 {icons[2 ]}  {colStyle}Kernel:{end}   {infoStyle}{get_kern()}{end}
 {icons[3 ]}  {colStyle}Desk:{end}     {infoStyle}{get_de()}{end}

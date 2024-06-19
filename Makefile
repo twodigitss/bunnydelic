@@ -1,13 +1,13 @@
 BINDIR = /usr/bin
-DOTF   = $(HOME)/.config
-fetchname=bunnydelic
+DOTF = $(HOME)/.config
+fetchname=bunfetch
 
 install:
-	#creating binary	
+	#creating executable...
 	@chmod 755 source
 	@sudo cp source $(BINDIR)/$(fetchname)
-	#generating config file in .config/$(fetchname)
-	@mkdir $(DOTF)/$(fetchname) && cp config.py $(DOTF)/$(fetchname)/
+	#generating config file in .config/$(fetchname)...
+	@mkdir $(DOTF)/$(fetchname) && cp config.py ascii.py $(DOTF)/$(fetchname)/
 
 uninstall:
 	@sudo rm -rf $(BINDIR)/$(fetchname)

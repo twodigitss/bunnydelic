@@ -1,3 +1,5 @@
+from ascii import ascii_list, getAscii
+
 ''' -- CONFIGURATION FILE (if it were not more obvious) --
     NOTES:
     1. MAKE SURE your custom ascii does not have weird escape chars. 
@@ -19,14 +21,14 @@ phraseToLeft=False
 phraseStyle = "normal"
 
 #Items: cpu,de,distro,gpu,host,kernel,model,owner,pkg,ram,shell,uptime,user
-display=["distro","user","kernel","shell","pkg","ram","uptime"]
+display=["distro","owner","kernel","shell","pkg","ram","uptime"]
 
 #values: normal, italic, bold, underline
 displayStyle = "normal"
 informationStyle = "normal"
 
 #Values: off, default, custom
-show_ascii="default"
+show_ascii="custom"
 
 #Values "off" "left" "bottom" 
 color_block_position="left"
@@ -47,32 +49,22 @@ override_distro_icon=True
 #Icons that are shown alsongside display variable 󰞅
 icons=["󰟀","󰀎","󰒔","󰙀","󰏓","","󱑂","","󰾆","","󰘚","󰳣",""]
 
-#Paste here your ascii
-custom_ascii='''
-⣿⣿⣿⣿⣿⣿⠿⠿⠟⠛⠛⠿⣿⣿
-⣿⣿⣿⣿⠋⠀⠀⠀⠀⣀⠀⠀⠈⠙
-⣿⣿⣿⢳⣿⡇⠀⠀⠸⣿⡏⠀⠀⠀
-⣿⣿⡿⠿⠈⣀⠀⠀⠀⠀⠹⣷⡀⠀
-⣿⣿⣦⠀⣜⣿⡄⠀⠀⢤⣶⣿⠇⢸
-⣿⣿⣿⡃⠈⠉⠁⠀⠀⠈⠛⠁⠀⠸
-⣿⣿⣿⠃⠠⠴⠒⠂⠀⠀⠀⠀⠀⠀
-⣿⣿⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀⣀⣴
-⣿⣿⣿⣇⠀⠀⠀⠀⠀⢀⣴⣾⣿⣿
-⣿⣿⣿⣿⣷⣤⣶⣶⠀⣿⣿⣿⣿⣿
-'''
+#Note: asciis are stored in ascii.py, use the function to get them
+#Values: "random" (as string) or any number (integer) as index inside an array
+custom_ascii = getAscii(0)
 
 #some random phrases to launch every time its executed
 somephrases=[
     "Hellow r/Unixporn! look at this!!",
     "Energy(e) = milk(m) * coffe(c) ^ 2",
     "Welcome back!! hope you enjoy today (:",
-    "Hey there! Ready to dive into the day?",
     "Keep calm and be happy today c:",
     "Fridays I go painting in the Louvre!!",
     "Inspired in bunnyfetch!! check it out!",
     "Peace and love for everyone <3",
-    "Hey ya!, ready to brighten up the day? (:", 
     "This fetch is owned now by Microsoft",
-    "Stay high and spread positive energy!!",
     "Rest in Peace ArchLabs, we will miss you",
+    "Lorem ipsum dolor sit amet, consectetur",
+    "Less than 15% of snakes are venemous",
+    "There are 32 muscles in a cat’s ear",
 ]
