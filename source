@@ -15,7 +15,7 @@ phrStyle=phrasestyles={ #phrase formatting style
 
 colStyle=styles={ #colored information style
 	"normal":"", "italic":ital, "bold":bold, "underline":line
-	}.get(displayStyle)
+	}.get(prefixStyle)
 
 infoStyle=styles={ #information formatting style
 	"normal":end, "italic":ital, "bold":bold, "underline":line
@@ -162,6 +162,27 @@ def get_pkg():
 
     return "".join([i+", " if (i!=0 and i!=packages[-1]) else i for i in packages])
 
+#this part of the code was repeated and honestly looks kinda intimidating
+def assign_colorblocks():
+    global fg_column, info_column
+    if color_block_position =="left":
+        if not show_phrase:
+            if i < len(bgkey): fg_column=f"{bg[bgkey[i]]} {fg[fg_list[i]]}"  
+            else: fg_column=f'{bg["wht"]} {fg["wht"]}'
+        else: #if show_phrase is True
+            if i < len(bgkey)+1: fg_column=f"{bg[bgkey[i-1]]} {fg[fg_list[i-1]]}"  
+            else: fg_column=f'{bg["wht"]} {fg["wht"]}'
+            
+    elif color_block_position in ["bottom","off"]:
+        if not show_phrase: 
+            if i < len(bgkey): fg_column=f"{fg[fg_list[i]]}" 
+            else: fg_column=f'{end}'
+        else: #if show_phrase is True
+            if i < len(bgkey)+1: fg_column=f"{fg[fg_list[i-1]]}" 
+            else: fg_column=f'{end}'
+            
+    else: fg_column=""
+
 if override_distro_icon is True: #else pass
     your_distro=get_os("name")
     for item in distros:
@@ -199,46 +220,35 @@ if __name__=="__main__":
     for item in display:
         if item in dictOfLines: info_lines.append(dictOfLines[item.lower()])
 
+    #if show_icon is false, removes the first 3 chars of every str 
     if show_icons is False: 
         for i in range(1, len(info_lines)): 
             info_lines[i] = info_lines[i][3:]
         
-    if color_block_position in ["bottom"]:
+    if color_block_position == "bottom":
         info_lines=info_lines+[f"{end}"]+[f"{bgblocks}{end}"]
 
     # what to show if ascii is removed
-    if show_ascii in ["off"]:
+    if show_ascii == "off":
+        #removes the first line, which is the phrase
         info_lines=info_lines[1:] if not show_phrase else info_lines
         max_lines = len(info_lines)+1
+        #Starts to process every line
         for i in range(max_lines):
             info_column = info_lines[i]  if i < len(info_lines)  else ''
-            
-            if color_block_position in ["left"]: #LEFT 
-                if not show_phrase:
-                    if i < len(bgkey): fg_column=f"{bg[bgkey[i]]} {fg[fg_list[i]]}"  
-                    else: fg_column=f'{bg["wht"]} {fg["wht"]}'
-                else: #if show_phrase is True
-                    if i < len(bgkey)+1: fg_column=f"{bg[bgkey[i-1]]} {fg[fg_list[i-1]]}"  
-                    else: fg_column=f'{bg["wht"]} {fg["wht"]}'
-            
-            elif color_block_position in ["bottom","off"]:
-                if not show_phrase: 
-                    if i < len(bgkey): fg_column=f"{fg[fg_list[i]]}"   
-                    else: fg_column=f'{end}'
-                else: #if show_phrase is True
-                    if i < len(bgkey)+1: fg_column=f"{fg[fg_list[i-1]]}"    
-                    else: fg_column=f'{end}'
-            
-            else: fg_column=""
+            #big ass function code i repeated
+            assign_colorblocks()
 
+            #this thing does the general processing of every line, the rest was just the color blocks
             if i==0: print(f"{fg_column}{info_column}" if not show_phrase else f"{info_column}")
             else: 
                 if not info_column:
-                    if   color_block_position in ["left","off"]: print(f"")
-                    elif color_block_position in ["bottom"]: print(f"{fg_column}{info_column}")
+                    if   color_block_position in ("left","off"): print(f"")
+                    elif color_block_position == "bottom": print(f"{fg_column}{info_column}")
                 else: print(f"{fg_column}{info_column}")
-
-    else:# show whatever ascii if no set "off"
+    
+    # show whatever ascii if no set "off"
+    else:
         if show_phrase is False:
             info_lines = info_lines[1:]
             ascii_lines= ascii_lines[1:] if asciiisdefault else ascii_lines
@@ -247,45 +257,32 @@ if __name__=="__main__":
         for i in range(max_lines):
             ascii_column  = ascii_lines[i] if i < len(ascii_lines) else spacer
             info_column = info_lines[i]  if i < len(info_lines)  else ''
+            #big ass function code i repeated
+            assign_colorblocks()
             
-            if color_block_position in ["left"]:
-                if not show_phrase:
-                    if i < len(bgkey): fg_column=f"{bg[bgkey[i]]} {fg[fg_list[i]]}"  
-                    else: fg_column=f'{bg["wht"]} {fg["wht"]}'
-                else: #if show_phrase is True
-                    if i < len(bgkey)+1: fg_column=f"{bg[bgkey[i-1]]} {fg[fg_list[i-1]]}"  
-                    else: fg_column=f'{bg["wht"]} {fg["wht"]}'
-            
-            elif color_block_position in ["bottom","off"]:
-                if not show_phrase: 
-                    if i < len(bgkey): fg_column=f"{fg[fg_list[i]]}" 
-                    else: fg_column=f'{end}'
-                else: #if show_phrase is True
-                    if i < len(bgkey)+1: fg_column=f"{fg[fg_list[i-1]]}" 
-                    else: fg_column=f'{end}'
-            
-            else: fg_column=""
-            
-            if i==0:# DO NO forget that this instruction is for printing only the phrase
+            #DO NO forget that this instruction is for printing only the phrase
+            if i==0:
                 if show_phrase:
                     if asciiisdefault or phraseToLeft: print(f"{ascii_column}{info_column}")
                     else: print(f"{ascii_column}   {info_column}")
                 else: print(f"{ascii_column}   {fg_column}{info_column}")
             
-            else:# From here prints the body
+            #From here prints the body
+            else:
+                #if ascii_col stills has something to print
                 if ascii_column:
-                    if not info_column: #if info_col ended printing
-                        if color_block_position in ["left","off"]: 
+                    if not info_column: #if info_column ended printing
+                        if color_block_position in ("left","off"): 
                             print(f"{ascii_column}")
-                        elif color_block_position in ["bottom"]: 
+                        elif color_block_position == "bottom": 
                             print(f"{ascii_column}   {fg_column}{info_column}")
                     
                     else: # info_col has more information still
                         print(f"{ascii_column}   {fg_column}{info_column}");# si no hay info el fg si se imprime
-                
-                else: #ascii_col ended printing
+
+                #ascii_col ended printing
+                else: 
                     if info_column: print(f"{spacer}   {fg_column}{info_column}")
                     else:
-                        if color_block_position in ["left","off"]: print(f"{spacer}   ")
-                        elif color_block_position in ["bottom"]: print(f"{end}")
-                        
+                        if color_block_position in ("left","off"): print(f"{spacer}   ")
+                        elif color_block_position == "bottom": print(f"{end}")
