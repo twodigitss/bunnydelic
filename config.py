@@ -2,14 +2,14 @@ from ascii import ascii_list, getAscii, blockPos
 
 ''' //--// IDK HOW TO CLASSIFY THIS
 =================================='''
+#Enable/disable color randomization
+randomize_colors = True
+
 #Enables/disables phrases
 show_phrase = True
 
 #Indent phrases to left instead right on custom ascii
 phraseToLeft = False
-
-#Enable/disable color randomization
-randomize_colors = True
 
 #Enables/Disables icons from NerdFonts.com
 show_icons = True

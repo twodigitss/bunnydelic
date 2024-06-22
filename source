@@ -173,7 +173,7 @@ def assign_colorblocks():
             if i < len(bgkey)+1: fg_column=f"{bg[bgkey[i-1]]} {fg[fg_list[i-1]]}"  
             else: fg_column=f'{bg["wht"]} {fg["wht"]}'
             
-    elif color_block_position in ["bottom","off"]:
+    elif color_block_position in ("bottom","off"):
         if not show_phrase: 
             if i < len(bgkey): fg_column=f"{fg[fg_list[i]]}" 
             else: fg_column=f'{end}'
