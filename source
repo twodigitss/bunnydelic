@@ -1,25 +1,18 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os, platform, random, socket, sys, subprocess
-sys.path.append(f"{os.path.expanduser('~')}/.config/bunnydelic/"); from config import *
-
-''' /////////////// STYLES ////////////// '''
+sys.path.append(f"{os.path.expanduser('~')}/.config/bunnydelic/"); 
+from config import *
+from ascii import ascii_list
 
 asciiisdefault=True;  #was the default_ascii replaced?
 phraseToLeft=False if show_phrase is False else phraseToLeft
-end = "\033[0m"; bold= "\033[1m"; c1=""; c2="";c3="";c4=""
-line= "\033[4m"; ital= "\033[3m"; f1=""; f2="";f3="";f4=""
+end = "\033[0m"; #escape character to undo previous coloring
 
-phrStyle=phrasestyles={ #phrase formatting style
-	"normal":end, "italic":ital, "bold":bold, "underline":line
-	}.get(phraseStyle)
-
-colStyle=styles={ #colored information style
-	"normal":"", "italic":ital, "bold":bold, "underline":line
-	}.get(prefixStyle)
-
-infoStyle=styles={ #information formatting style
-	"normal":end, "italic":ital, "bold":bold, "underline":line
-	}.get(informationStyle)
+#colored information style
+styles={ "normal":"", "italic":"\033[3m", "bold":"\033[1m", "underline":"\033[4m" }
+phrStyle  = styles.get(phraseStyle)
+colStyle  = styles.get(prefixStyle)
+infoStyle = styles.get(informationStyle)
 
 colorkeywords={ #used to read vars from config file
     "red":"red", "blue":"ble", "green":"grn", "yellow":"ylw", 
@@ -37,18 +30,17 @@ bg={ #normal background colors that paints a two-spaced square
     "prp":"\033[0;45m  \033[0m", "cyn":"\033[0;46m  \033[0m",
     "wht":"\033[0;47m  \033[0m", "blk":"\033[0;40m  \033[0m",
 }
-faces={ #feel freee to add more if you want
-    "a1":"- -", "a2":"-_-", "a3":"-u-", "a4":"-o-", "a5":"-w-", "a6":"-.-", "a7":"-v-", "a8":"-~-",
-    "b1":"'-'", "b2":"'·'", "b3":"'u'", "b4":"'o'", "b5":"'w'", "b6":"'.'", "b7":"'^'", "b8":"'~'",
-    "c1":"O-o", "c2":"O_o", "c3":"OuO", "c4":"O O", "c5":"OwO", "c6":"O.o", "c7":"O^o", "c8":"O~o",
-    "d1":"U-u", "d2":"U_u", "d3":"U U", "d4":"Uou", "d5":"Uwu", "d6":"U.u", "d7":"U^u", "d8":"U~u",
-    "e1":">-<", "e2":">_<", "e3":">u<", "e4":">o<", "e5":">w<", "e6":">.<", "e7":">^<", "e8":">~<",
-    "f1":"T-T", "f2":"T_T", "f3":"TuT", "f4":"ToT", "f5":"TwT", "f6":"T.T", "f7":"T^T", "f8":"T~T",
-    "g1":"7-7", "g2":"7_7", "g3":"7u7", "g4":"7o7", "g5":"7w7", "g6":"7.7", "g7":"7^7", "g8":"7~7",
-    "h1":"^-^", "h2":"^_^", "h3":"^u^", "h4":"^o^", "h5":"^w^", "h6":"^.^", "h7":"^ ^", "h8":"^~^",
-    "i1":"·-·", "i2":"·_·", "i3":"·u·", "i4":"·o·", "i5":"·w·", "i6":"·.·", "i7":"·^·", "i8":"·~·",
-    
-}
+faces=[ #feel freee to add more if you want
+    "- -", "-_-", "-u-", "-o-", "-w-", "-.-", "-v-", "-~-",
+    "'-'", "'·'", "'u'", "'o'", "'w'", "'.'", "'^'", "'~'",
+    "O-o", "O_o", "OuO", "O O", "OwO", "O.o", "O^o", "O~o",
+    "U-u", "U_u", "U U", "Uou", "Uwu", "U.u", "U^u", "U~u",
+    ">-<", ">_<", ">u<", ">o<", ">w<", ">.<", ">^<", ">~<",
+    "T-T", "T_T", "TuT", "ToT", "TwT", "T.T", "T^T", "T~T",
+    "7-7", "7_7", "7u7", "7o7", "7w7", "7.7", "7^7", "7~7",
+    "^-^", "^_^", "^u^", "^o^", "^w^", "^.^", "^ ^", "^~^",
+    "·-·", "·_·", "·u·", "·o·", "·w·", "·.·", "·^·", "·~·",
+]
 distros={ #Robotition suggested this, thank him :>
     "Arch Linux":"",        "Debian GNU/Linux":"",  "EndeavourOS":"",   "Manjaro Linux":"󱘊",     "Parrot":"",
     "Ubuntu":"",            "Pop!_OS":"",           "Fedora Linux":"󰣛",        "Crystal Linux":"",     "Zorin OS":"",
@@ -58,20 +50,33 @@ distros={ #Robotition suggested this, thank him :>
     "Parabola GNU/Linux-libre":"", "Hyperbola GNU/Linux-libre":"",
            
 }
+#gets desired ascii by index (or "random" if wanted)
+if custom_ascii == "random":
+    custom_ascii = ascii_list[random.randint(0,len(ascii_list)-1)]
+else: #lets dont forget that custom_ascii also 
+    custom_ascii = ascii_list[custom_ascii]
 
-#Randomize and sort faces and colors
-fg_list = list(fg.keys()); bgkey = list(bg.keys())
-face_list = list(faces.keys()); random.shuffle(face_list)
-if randomize_colors: random.shuffle(fg_list)
-else: fg_list = [colorkeywords[color] for color in static_color_set]
-#match bgkey with the order set in fg_list
-bgkey = [bg_key for fg_key in fg_list for bg_key in bg if fg_key == bg_key]
-bgblocks="".join([bg[bg_key] for fg_key in fg_list for bg_key in bg if fg_key == bg_key])
+#sets color block position through parameters to accept random value
+if color_block_position == "random": 
+    colBloPosValues = ["off", "left", "bottom"]
+    color_block_position = colBloPosValues[ random.randint(0, len(colBloPosValues)-1) ] 
 
-c1 = fg[fg_list[0]];  f1 = faces[face_list[0]]
-c2 = fg[fg_list[1]];  f2 = faces[face_list[1]]
-c3 = fg[fg_list[2]];  f3 = faces[face_list[2]]
-c4 = fg[fg_list[3]];  f4 = faces[face_list[3]]
+#bro, i had a ridiculous functions to sort values to make em equal, just to notice
+#everything was as easy as a value assignation (on variables) to get the same result xDDDDDD
+random.shuffle(faces)
+FGColorList = list(colorkeywords.values())
+
+if randomize_colors: random.shuffle(FGColorList)
+else: FGColorList = [colorkeywords[color] for color in static_color_set]
+
+#match BGColorList with the order set in FGColorList
+BGColorList = FGColorList
+bgblocks="".join([bg[i] for i in BGColorList])
+
+c1 = fg[FGColorList[0]];  f1 = faces[0]
+c2 = fg[FGColorList[1]];  f2 = faces[1]
+c3 = fg[FGColorList[2]];  f3 = faces[2]
+c4 = fg[FGColorList[3]];  f4 = faces[3]
 
 #default ascii art (do not touch pls)
 default_ascii=f'''
@@ -84,8 +89,8 @@ c({c1}"{end})({c1}"{end})  c({c2}"{end})({c2}"{end})
 c({c3}"{end})({c3}"{end})  c({c4}"{end})({c4}"{end})
 '''
 
-if show_ascii in ["custom"]: #if showascii=default: pass
-    if custom_ascii: #if not customascii: pass
+if show_ascii == "custom": #if showascii=default: pass
+    if custom_ascii: #if customascii has not ascii image on it: pass
         newascii = custom_ascii.strip().split('\n')
         max_length = max(len(line) for line in newascii)
         newFormat=[line.ljust(max_length, ' ') for line in newascii]; #!!!
@@ -96,8 +101,9 @@ if show_ascii in ["custom"]: #if showascii=default: pass
 ''' /////////////// FETCH ////////////// '''
 
 # Array with each life of ascii art and a custom auto-adjustable spacer
-ascii_lines= default_ascii.split('\n'); max_lines =  0
-spacer=" " * max(len(line) for line in ascii_lines) if not asciiisdefault else " " * 16
+ascii_lines= default_ascii.split('\n')
+if not asciiisdefault: spacer = " " * max(len(line) for line in ascii_lines)
+else: spacer = " " * 16
 
 # functions to fetch information
 def get_user(): return os.getlogin()
@@ -113,7 +119,7 @@ def get_de():
 def get_os(name):
     NAME="PRETTY_NAME" if name=="pretty_name" else "NAME"
     return subprocess.run(
-        f"grep '^{NAME}=' /etc/os-release" "| awk -F '=' '{print $2}' | tr -d '\"'", 
+        f"grep '^{NAME}=' /etc/os-release" + "| awk -F '=' '{print $2}' | tr -d '\"'", 
         shell=True, capture_output=True, text=True).stdout.strip()
 
 def get_cpu():
@@ -167,18 +173,18 @@ def assign_colorblocks():
     global fg_column, info_column
     if color_block_position =="left":
         if not show_phrase:
-            if i < len(bgkey): fg_column=f"{bg[bgkey[i]]} {fg[fg_list[i]]}"  
+            if i < len(BGColorList): fg_column=f"{bg[BGColorList[i]]} {fg[FGColorList[i]]}";
             else: fg_column=f'{bg["wht"]} {fg["wht"]}'
         else: #if show_phrase is True
-            if i < len(bgkey)+1: fg_column=f"{bg[bgkey[i-1]]} {fg[fg_list[i-1]]}"  
+            if i < len(BGColorList)+1: fg_column=f"{bg[BGColorList[i-1]]} {fg[FGColorList[i-1]]}"  
             else: fg_column=f'{bg["wht"]} {fg["wht"]}'
             
     elif color_block_position in ("bottom","off"):
         if not show_phrase: 
-            if i < len(bgkey): fg_column=f"{fg[fg_list[i]]}" 
+            if i < len(BGColorList): fg_column=f"{fg[FGColorList[i]]}" 
             else: fg_column=f'{end}'
         else: #if show_phrase is True
-            if i < len(bgkey)+1: fg_column=f"{fg[fg_list[i-1]]}" 
+            if i < len(BGColorList)+1: fg_column=f"{fg[FGColorList[i-1]]}" 
             else: fg_column=f'{end}'
             
     else: fg_column=""

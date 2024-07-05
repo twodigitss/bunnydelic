@@ -10,24 +10,25 @@ You can customize the looks modifying some parameters in `config.py` <br>
 Highly inspired in bunnyfetch by Rosettea. <br>
 https://github.com/Rosettea/bunnyfetch.
 
-## Dependencies
+## Dependencies _(that you must install)_
 1. Python
 2. Make
+3. awk (i believe)
 
 ## Instructions
-1. Clone the repo locally using `git clone`<br>
+1. Clone the repo locally using `git clone paste_repo_link_here`<br>
 2. Change directory to the folder with `cd bunnydelic`<br>
 3. Install as binary with  `make install`<br>
+3.1. To uninstall use `make uninstall`<br>
 4. Run as  `bunnydelic`<br>
-5. For uninstalling use `make uninstall`<br>
 
-## Supported distros (hopefully)
+## Supported distros _(hopefully)_
 - Arch linux and derivated distros
 - Debian and derivated distros
 - Redhat and derivated distros
 
 
-## Future plans
+## Future plans 
 + make an aur package when it's stable
 + make an deb package when it's stable
 

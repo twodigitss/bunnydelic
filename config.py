@@ -1,15 +1,13 @@
-from ascii import ascii_list, getAscii, blockPos
-
-''' //--// IDK HOW TO CLASSIFY THIS
+''' //--// TOGGLEABLES
 =================================='''
-#Enable/disable color randomization
-randomize_colors = True
-
 #Enables/disables phrases
 show_phrase = True
 
 #Indent phrases to left instead right on custom ascii
 phraseToLeft = False
+
+#Enable/disable color randomization
+randomize_colors = True
 
 #Enables/Disables icons from NerdFonts.com
 show_icons = True
@@ -17,8 +15,20 @@ show_icons = True
 #Shows your distro icon instead the stock one in "icons" list
 override_distro_icon = True
 
+
 ''' //--// STYLES
 =================================='''
+#Values: off, default, custom
+show_ascii = "custom"
+
+#Values: "random" (as string) or any number (as integer) as an index inside an array
+#Examples: custom_ascii = "random" / custom_ascii = 1 / custom_ascii = 2 / etc.
+#Note: asciis are stored in ascii.py, add more/remove if you want
+custom_ascii = "random"
+
+#Values "off", "left", "bottom", "random"
+color_block_position = "random"
+
 #this is the phrase style, the entire line will be formated to:
 #values: normal, italic, bold, underline 
 phraseStyle = "normal"
@@ -31,29 +41,19 @@ prefixStyle = "normal"
 #values: normal, italic, bold, underline
 informationStyle = "normal"
 
-#Values: off, default, custom
-show_ascii = "default"
-
-#Values "off", "left", "bottom", "random"
-color_block_position = blockPos("left")
-
-#Values: "random" (as string) or any number (integer) as an index inside an array
-#Examples: getAscii("random"), getAscii(2), getAscii(0), etc.
-#Note: asciis are stored in ascii.py, add more/remove if you want
-custom_ascii = getAscii("random")
 
 ''' //--// INFORMATION SETS
 =================================='''
-#Set the color order if randomize_colors is false.
-#You can repeat colors, also make sure this list is at least 4 elements long
-static_color_set = ["purple","red","black","blue","green","white","cyan","yellow"]
-
 #Displays set information of your choose in this specific order
 #Items: cpu,de,distro,gpu,host,kernel,model,owner,pkg,ram,shell,uptime,user
 display = ["distro","owner","kernel","shell","pkg","ram","uptime"]
 
 #Icons that are shown alsongside display variable 󰞅
 icons = ["󰟀","󰀎","󰒔","󰙀","󰏓","","󱑂","","󰾆","","󰘚","󰳣",""]
+
+#Set the color order if randomize_colors is false.
+#You can repeat colors, also make sure this list is at least 4 elements long
+static_color_set = ["purple","red","black","blue","green","white","cyan","yellow"]
 
 #some random phrases to launch every time its executed
 somephrases = [
