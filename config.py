@@ -19,7 +19,7 @@ override_distro_icon = True
 ''' //--// STYLES
 =================================='''
 #Values: off, default, custom
-show_ascii = "custom"
+show_ascii = "default"
 
 #Values: "random" (as string) or any number (as integer) as an index inside an array
 #Examples: custom_ascii = "random" / custom_ascii = 1 / custom_ascii = 2 / etc.
@@ -27,7 +27,7 @@ show_ascii = "custom"
 custom_ascii = "random"
 
 #Values "off", "left", "bottom", "random"
-color_block_position = "random"
+color_block_position = "left"
 
 #this is the phrase style, the entire line will be formated to:
 #values: normal, italic, bold, underline 
