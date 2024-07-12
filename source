@@ -3,116 +3,14 @@
 from subprocess import run
 from os import path, getlogin, environ, popen
 from platform import uname
-from random import randint, shuffle
+from random import shuffle, choice
 from socket import gethostname
 from sys import path as SysPath
-
 SysPath.append(f"{path.expanduser('~')}/.config/bunnydelic/"); 
 from config import *
 
 #merely for debugging
 #timeStart = time()
-
-asciiisdefault=True;  #was the default_ascii replaced?
-phraseToLeft=False if show_phrase is False else phraseToLeft
-end = "\033[0m"; #escape character to undo previous coloring
-
-#colored information style
-styles={ "normal":"", "italic":"\033[3m", "bold":"\033[1m", "underline":"\033[4m" }
-phrStyle  = styles.get(phraseStyle)
-colStyle  = styles.get(prefixStyle)
-infoStyle = styles.get(informationStyle)
-
-colorkeywords={ #used to read vars from config file
-    "red":"red", "blue":"ble", "green":"grn", "yellow":"ylw", 
-    "purple":"prp", "cyan":"cyn", "white":"wht", "black":"blk"
-}
-fg={ #normal foreground colors
-    "red":  "\033[0;31m",   "grn":  "\033[0;32m",   
-    "ylw":  "\033[0;33m",   "ble":  "\033[0;34m",
-    "prp":  "\033[0;35m",   "cyn":  "\033[0;36m",
-    "wht":  "\033[0;37m",   "blk":  "\033[0;30m",   
-}
-bg={ #normal background colors that paints a two-spaced square
-    "red":"\033[0;41m  \033[0m", "grn":"\033[0;42m  \033[0m",
-    "ylw":"\033[0;43m  \033[0m", "ble":"\033[0;44m  \033[0m",
-    "prp":"\033[0;45m  \033[0m", "cyn":"\033[0;46m  \033[0m",
-    "wht":"\033[0;47m  \033[0m", "blk":"\033[0;40m  \033[0m",
-}
-faces=[ #feel freee to add more if you want
-    "- -", "-_-", "-u-", "-o-", "-w-", "-.-", "-v-", "-~-",
-    "'-'", "'·'", "'u'", "'o'", "'w'", "'.'", "'^'", "'~'",
-    "O-o", "O_o", "OuO", "O O", "OwO", "O.o", "O^o", "O~o",
-    "U-u", "U_u", "U U", "Uou", "Uwu", "U.u", "U^u", "U~u",
-    ">-<", ">_<", ">u<", ">o<", ">w<", ">.<", ">^<", ">~<",
-    "T-T", "T_T", "TuT", "ToT", "TwT", "T.T", "T^T", "T~T",
-    "7-7", "7_7", "7u7", "7o7", "7w7", "7.7", "7^7", "7~7",
-    "^-^", "^_^", "^u^", "^o^", "^w^", "^.^", "^ ^", "^~^",
-    "·-·", "·_·", "·u·", "·o·", "·w·", "·.·", "·^·", "·~·",
-]
-distros={ #Robotition suggested this, thank him :>
-    "Arch Linux":"",        "Debian GNU/Linux":"",  "EndeavourOS":"",   "Manjaro Linux":"󱘊",     "Parrot":"",
-    "Ubuntu":"",            "Pop!_OS":"",           "Fedora Linux":"󰣛",        "Crystal Linux":"",     "Zorin OS":"",
-    "Kali GNU/Linux":"",    "Rocky Linux":"",       "Linux Mint":"󰣭",    "AlmaLinux":"",         "MX Linux":"",
-    "Archcraft":"",         "ArchLabs":"",          "ArcoLinux":"",     "Artix Linux":"",       "BigLinux":"",
-    "CentOS Linux":"",      "Devuan GNU/Linux":"",  "elementary OS":"", "Garuda Linux":"",      "Loc-os":"",
-    "Parabola GNU/Linux-libre":"", "Hyperbola GNU/Linux-libre":"",
-           
-}
-#gets desired ascii by index (or "random" if wanted)
-if custom_ascii == "random":
-    custom_ascii = ascii_list[randint(0,len(ascii_list)-1)]
-else: #lets dont forget that custom_ascii also 
-    custom_ascii = ascii_list[custom_ascii]
-
-#sets color block position through parameters to accept random value
-if color_block_position == "random": 
-    colBloPosValues = ["off", "left", "bottom"]
-    color_block_position = colBloPosValues[ randint(0, len(colBloPosValues)-1) ] 
-
-#bro, i had a ridiculous functions to sort values to make em equal, just to notice
-#everything was as easy as a value assignation (on variables) to get the same result xDDDDDD
-shuffle(faces)
-FGColorList = list(colorkeywords.values())
-
-if randomize_colors: shuffle(FGColorList)
-else: FGColorList = [colorkeywords[color] for color in static_color_set]
-
-#match BGColorList with the order set in FGColorList
-BGColorList = FGColorList
-bgblocks="".join([bg[i] for i in BGColorList])
-
-c1 = fg[FGColorList[0]];  f1 = faces[0]
-c2 = fg[FGColorList[1]];  f2 = faces[1]
-c3 = fg[FGColorList[2]];  f3 = faces[2]
-c4 = fg[FGColorList[3]];  f4 = faces[3]
-
-#default ascii art (do not touch pls)
-default_ascii=f'''
-(\\ /)    (\\ /)  
-( {f1})   ( {f2}) 
-c({c1}"{end})({c1}"{end})  c({c2}"{end})({c2}"{end})
-                
-(\\ /)    (\\ /)  
-( {f3})   ( {f4}) 
-c({c3}"{end})({c3}"{end})  c({c4}"{end})({c4}"{end})
-'''
-
-if show_ascii == "custom": #if showascii=default: pass
-    if custom_ascii: #if customascii has not ascii image on it: pass
-        newascii = custom_ascii.strip().split('\n')
-        max_length = max(len(line) for line in newascii)
-        newFormat=[line.ljust(max_length, ' ') for line in newascii]; #!!!
-        if phraseToLeft is True: default_ascii = "\n" + '\n'.join(newFormat) + '\n'
-        else: default_ascii = "" + '\n'.join(newFormat) + '\n'
-        asciiisdefault=False
-
-''' /////////////// FETCH ////////////// '''
-
-# Array with each life of ascii art and a custom auto-adjustable spacer
-ascii_lines= default_ascii.split('\n')
-if not asciiisdefault: spacer = " " * max(len(line) for line in ascii_lines)
-else: spacer = " " * 16
 
 # functions to fetch information
 def get_user(): return getlogin()
@@ -121,14 +19,14 @@ def get_sh(): return environ.get('SHELL')
 def get_kern(): return f"{uname().release}"
 
 def get_de(): 
-    if environ.get('XDG_CURRENT_DESKTOP') is None: 
-        return environ.get('XDG_SESSION_DESKTOP')
-    else: return environ.get('XDG_CURRENT_DESKTOP')
+    desktop = environ.get('XDG_CURRENT_DESKTOP')
+    session = environ.get('XDG_SESSION_DESKTOP')
+    if desktop: return desktop 
+    else: return session
     
-def get_os(name):
-    NAME="PRETTY_NAME" if name=="pretty_name" else "NAME"
+def get_os():
     return run(
-        f"grep '^{NAME}=' /etc/os-release" + "| awk -F '=' '{print $2}' | tr -d '\"'", 
+        "grep '^NAME=' /etc/os-release | awk -F '=' '{print $2}' | tr -d '\"'", 
         shell=True, capture_output=True, text=True).stdout.strip()
 
 def get_cpu():
@@ -198,14 +96,124 @@ def assign_colorblocks():
             
     else: fg_column=""
 
-if override_distro_icon is True: #else pass
-    your_distro=get_os("name")
-    for item in distros:
-        if item==your_distro: icons[0]=distros[item]
+styles={ #used to format text (:
+    "italic" :  "\033[3m",  "normal":   "", 
+    "bold" :    "\033[1m",  "underline":"\033[4m" 
+}
+colorkeywords={ #used to read vars from config file
+    "red":"red", "blue":"ble", "green":"grn", "yellow":"ylw", 
+    "purple":"prp", "cyan":"cyn", "white":"wht", "black":"blk"
+}
+fg={ #normal foreground colors
+    "red":  "\033[0;31m",   "grn":  "\033[0;32m",   
+    "ylw":  "\033[0;33m",   "ble":  "\033[0;34m",
+    "prp":  "\033[0;35m",   "cyn":  "\033[0;36m",
+    "wht":  "\033[0;37m",   "blk":  "\033[0;30m",   
+}
+bg={ #normal background colors that paints a two-spaced square
+    "red":"\033[0;41m  \033[0m", "grn":"\033[0;42m  \033[0m",
+    "ylw":"\033[0;43m  \033[0m", "ble":"\033[0;44m  \033[0m",
+    "prp":"\033[0;45m  \033[0m", "cyn":"\033[0;46m  \033[0m",
+    "wht":"\033[0;47m  \033[0m", "blk":"\033[0;40m  \033[0m",
+}
+faces=[ #feel freee to add more if you want
+    "- -", "-_-", "-u-", "-o-", "-w-", "-.-", "-v-", "-~-",
+    "'-'", "'·'", "'u'", "'o'", "'w'", "'.'", "'^'", "'~'",
+    "O-o", "O_o", "OuO", "O O", "OwO", "O.o", "O^o", "O~o",
+    "U-u", "U_u", "U U", "Uou", "Uwu", "U.u", "U^u", "U~u",
+    ">-<", ">_<", ">u<", ">o<", ">w<", ">.<", ">^<", ">~<",
+    "T-T", "T_T", "TuT", "ToT", "TwT", "T.T", "T^T", "T~T",
+    "7-7", "7_7", "7u7", "7o7", "7w7", "7.7", "7^7", "7~7",
+    "^-^", "^_^", "^u^", "^o^", "^w^", "^.^", "^ ^", "^~^",
+    "·-·", "·_·", "·u·", "·o·", "·w·", "·.·", "·^·", "·~·",
+]
+distros={ #Robotition suggested this, thank him :>
+    "Arch Linux":"",        "Debian GNU/Linux":"",  "EndeavourOS":"",   "Manjaro Linux":"󱘊",     "Parrot":"",
+    "Ubuntu":"",            "Pop!_OS":"",           "Fedora Linux":"󰣛",        "Crystal Linux":"",     "Zorin OS":"",
+    "Kali GNU/Linux":"",    "Rocky Linux":"",       "Linux Mint":"󰣭",    "AlmaLinux":"",         "MX Linux":"",
+    "Archcraft":"",         "ArchLabs":"",          "ArcoLinux":"",     "Artix Linux":"",       "BigLinux":"",
+    "CentOS Linux":"",      "Devuan GNU/Linux":"",  "elementary OS":"", "Garuda Linux":"",      "Loc-os":"",
+    "Parabola GNU/Linux-libre":"", "Hyperbola GNU/Linux-libre":"",
+           
+}
 
-#this is a LIST of every line to print
-info_lines=f'''{phrStyle}{somephrases[randint(0,len(somephrases)-1)]}{end}
-{icons[0 ]}  {colStyle}Distro:{end}   {infoStyle}{get_os("name")}{end}
+#MAIN METHOD
+if __name__=="__main__":
+    end = "\033[0m"; #escape character to undo previous coloring
+    asciiisdefault=True;  #was the default_ascii replaced?
+
+    #colored information style
+    phrStyle  = styles.get(phraseStyle)
+    colStyle  = styles.get(prefixStyle)
+    infoStyle = styles.get(informationStyle)
+
+    if show_phrase is False: phraseToLeft=False
+    else: phraseToLeft=True
+
+    #gets desired ascii by index (or "random" if wanted)
+    if custom_ascii == "random":
+        custom_ascii = choice(ascii_list)
+    else: #lets dont forget that custom_ascii also 
+        custom_ascii = ascii_list[custom_ascii]
+
+    #sets color block position through parameters to accept random value
+    if color_block_position == "random": 
+        colBloPosValues = ["off", "left", "bottom"]
+        color_block_position = choice(colBloPosValues) 
+
+    #bro, i had a ridiculous functions to sort values to make em equal, just to notice
+    #everything was as easy as a value assignation (on variables) to get the same result xDDDDDD
+    FGColorList = list(colorkeywords.values())
+
+    if randomize_colors: shuffle(FGColorList)
+    else: FGColorList = [colorkeywords[color] for color in static_color_set]
+
+    #match BGColorList with the order set in FGColorList
+    BGColorList = FGColorList
+    bgblocks="".join([bg[i] for i in BGColorList])
+
+    shuffle(faces)
+    c1 = fg[FGColorList[0]];  f1 = faces[0]
+    c2 = fg[FGColorList[1]];  f2 = faces[1]
+    c3 = fg[FGColorList[2]];  f3 = faces[2]
+    c4 = fg[FGColorList[3]];  f4 = faces[3]
+
+    #default ascii art (do not touch pls)
+    default_ascii=f'''
+(\\ /)    (\\ /)  
+( {f1})   ( {f2}) 
+c({c1}"{end})({c1}"{end})  c({c2}"{end})({c2}"{end})
+                
+(\\ /)    (\\ /)  
+( {f3})   ( {f4}) 
+c({c3}"{end})({c3}"{end})  c({c4}"{end})({c4}"{end})
+'''
+
+    if show_ascii == "custom": #if showascii=default: pass
+        if custom_ascii: #if customascii has not ascii image on it: pass
+            newascii: list = custom_ascii.strip().split('\n')
+            max_length = max(len(line) for line in newascii)
+            newFormat=[line.ljust(max_length, ' ') for line in newascii]; #!!!
+            if phraseToLeft is True: 
+                default_ascii = "\n" + '\n'.join(newFormat) + '\n'
+            else: 
+                default_ascii = "" + '\n'.join(newFormat) + '\n'
+            asciiisdefault=False
+
+    # Array with each life of ascii art and a custom auto-adjustable spacer
+    ascii_lines= default_ascii.split('\n')
+    if asciiisdefault is False: spacer = " " * max(len(line) for line in ascii_lines)
+    else: spacer = " " * 16
+
+    #replace stock icon with specific distro icon
+    if override_distro_icon is True: #else pass
+        your_distro=get_os()
+        for item in distros:
+            if item==your_distro: icons[0]=distros[item]
+
+    #this is a LIST of every line to print
+    info_lines=f'''{phrStyle}{choice(somephrases)}{end}
+{icons[0 ]}  {colStyle}Distro:{end}   {infoStyle}{get_os()}{end}
 {icons[1 ]}  {colStyle}Owner:{end}    {infoStyle}{get_host()} {get_user()}{end}
 {icons[2 ]}  {colStyle}Kernel:{end}   {infoStyle}{get_kern()}{end}
 {icons[3 ]}  {colStyle}Desk:{end}     {infoStyle}{get_de()}{end}
@@ -220,16 +228,14 @@ info_lines=f'''{phrStyle}{somephrases[randint(0,len(somephrases)-1)]}{end}
 {icons[12]}  {colStyle}Host:{end}     {infoStyle}{get_host()}{end}
 '''.split('\n')
 
-dictOfLines={
-    "distro":info_lines[1], "owner":info_lines[2],  "kernel":info_lines[3], 
-    "de":info_lines[4],     "pkg":info_lines[5],    "shell":info_lines[6],      
-    "uptime":info_lines[7], "ram": info_lines[8],   "cpu":info_lines[9],    
-    "gpu": info_lines[11],  "user": info_lines[12], "host": info_lines[13],  
-    "model":info_lines[10],
-}
+    dictOfLines={
+        "distro":info_lines[1], "owner":info_lines[2],  "kernel":info_lines[3], 
+        "de":info_lines[4],     "pkg":info_lines[5],    "shell":info_lines[6],      
+        "uptime":info_lines[7], "ram": info_lines[8],   "cpu":info_lines[9],    
+        "gpu": info_lines[11],  "user": info_lines[12], "host": info_lines[13],  
+        "model":info_lines[10],
+    }
 
-#MAIN METHOD
-if __name__=="__main__":
     #Sort the information as "display" variable
     info_lines=info_lines[:1]; #exclude the first line
     for item in display:
@@ -302,6 +308,7 @@ if __name__=="__main__":
                         if color_block_position in ("left","off"): print(f"{spacer}   ")
                         elif color_block_position == "bottom": print(f"{end}")
 
-#timeEnd = time()
-#print(f"Execution time: {timeEnd - timeStart}")
-#fastest time: 0.035... seconds
+    #merely for debugging
+    #timeEnd = time()
+    #print(f"Execution time: {timeEnd - timeStart}")
+    #fastest time: 0.033704519271850586 seconds
