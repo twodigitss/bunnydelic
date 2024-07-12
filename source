@@ -1,8 +1,17 @@
 #!/usr/bin/env python3
-import os, platform, random, socket, sys, subprocess
-sys.path.append(f"{os.path.expanduser('~')}/.config/bunnydelic/"); 
+#from time import time
+from subprocess import run
+from os import path, getlogin, environ, popen
+from platform import uname
+from random import randint, shuffle
+from socket import gethostname
+from sys import path as SysPath
+
+SysPath.append(f"{path.expanduser('~')}/.config/bunnydelic/"); 
 from config import *
-from ascii import ascii_list
+
+#merely for debugging
+#timeStart = time()
 
 asciiisdefault=True;  #was the default_ascii replaced?
 phraseToLeft=False if show_phrase is False else phraseToLeft
@@ -52,21 +61,21 @@ distros={ #Robotition suggested this, thank him :>
 }
 #gets desired ascii by index (or "random" if wanted)
 if custom_ascii == "random":
-    custom_ascii = ascii_list[random.randint(0,len(ascii_list)-1)]
+    custom_ascii = ascii_list[randint(0,len(ascii_list)-1)]
 else: #lets dont forget that custom_ascii also 
     custom_ascii = ascii_list[custom_ascii]
 
 #sets color block position through parameters to accept random value
 if color_block_position == "random": 
     colBloPosValues = ["off", "left", "bottom"]
-    color_block_position = colBloPosValues[ random.randint(0, len(colBloPosValues)-1) ] 
+    color_block_position = colBloPosValues[ randint(0, len(colBloPosValues)-1) ] 
 
 #bro, i had a ridiculous functions to sort values to make em equal, just to notice
 #everything was as easy as a value assignation (on variables) to get the same result xDDDDDD
-random.shuffle(faces)
+shuffle(faces)
 FGColorList = list(colorkeywords.values())
 
-if randomize_colors: random.shuffle(FGColorList)
+if randomize_colors: shuffle(FGColorList)
 else: FGColorList = [colorkeywords[color] for color in static_color_set]
 
 #match BGColorList with the order set in FGColorList
@@ -106,37 +115,37 @@ if not asciiisdefault: spacer = " " * max(len(line) for line in ascii_lines)
 else: spacer = " " * 16
 
 # functions to fetch information
-def get_user(): return os.getlogin()
-def get_host(): return socket.gethostname()
-def get_sh(): return os.environ.get('SHELL')
-def get_kern(): return f"{platform.uname().release}"
+def get_user(): return getlogin()
+def get_host(): return gethostname()
+def get_sh(): return environ.get('SHELL')
+def get_kern(): return f"{uname().release}"
 
 def get_de(): 
-    if os.environ.get('XDG_CURRENT_DESKTOP') is None: 
-        return os.environ.get('XDG_SESSION_DESKTOP')
-    else: return os.environ.get('XDG_CURRENT_DESKTOP')
+    if environ.get('XDG_CURRENT_DESKTOP') is None: 
+        return environ.get('XDG_SESSION_DESKTOP')
+    else: return environ.get('XDG_CURRENT_DESKTOP')
     
 def get_os(name):
     NAME="PRETTY_NAME" if name=="pretty_name" else "NAME"
-    return subprocess.run(
+    return run(
         f"grep '^{NAME}=' /etc/os-release" + "| awk -F '=' '{print $2}' | tr -d '\"'", 
         shell=True, capture_output=True, text=True).stdout.strip()
 
 def get_cpu():
-    return subprocess.run("lscpu | awk '/Model name/ {print $3, $4, $5, $6}'", 
+    return run("lscpu | awk '/Model name/ {print $3, $4, $5, $6}'", 
     shell=True, capture_output=True, text=True).stdout.strip()
 
 def get_ram():
-    ram = subprocess.run("free -h | awk '/^Mem/ {print $3, $2}'", 
+    ram = run("free -h | awk '/^Mem/ {print $3, $2}'", 
     shell=True, capture_output=True, text=True).stdout.strip()
     return ram.replace(' ', ' / ').replace('Mi', 'Mb').replace('Gi', 'Gb')
 
 def get_hdw():
-    return subprocess.run("cat /sys/class/dmi/id/product_name", 
+    return run("cat /sys/class/dmi/id/product_name", 
     shell=True, capture_output=True, text=True).stdout.strip()
 
 def get_gpu():
-    return subprocess.run(
+    return run(
     "lspci | grep -iE 'VGA|3D|Display' | awk -F '[:[:space:]]+' '{print $6,$7,$8,$9,$10}'", 
     shell=True, capture_output=True, text=True).stdout.strip()
 
@@ -148,21 +157,21 @@ def get_upt():
 
 def get_pkg():
     packages=[]
-    if os.path.exists('/etc/pacman.conf'):
-        pac=len(os.popen("pacman -Qq").readlines())
+    if path.exists('/etc/pacman.conf'):
+        pac=len(popen("pacman -Qq").readlines())
         packages.append(f"{pac} (pacman)")
 
-    elif os.path.exists('/etc/apt/sources.list') or os.path.exists('/etc/apt'): 
-       apt = subprocess.run(['dpkg', '-l'], capture_output=True, text=True)
+    elif path.exists('/etc/apt/sources.list') or path.exists('/etc/apt'): 
+       apt = run(['dpkg', '-l'], capture_output=True, text=True)
        apt = len(apt.stdout.splitlines()) - 5; #substract header file
        packages.append(f"{apt} (apt)")
 
-    elif os.path.exists('/etc/dnf/dnf.conf') or os.path.exists('/etc/yum'): 
-       dnf = subprocess.run(['dnf', 'list', 'installed'], capture_output=True, text=True)
+    elif path.exists('/etc/dnf/dnf.conf') or path.exists('/etc/yum'): 
+       dnf = run(['dnf', 'list', 'installed'], capture_output=True, text=True)
        dnf = len(dnf.stdout.splitlines()) - 1; #substract header file
        packages.append(f"{dnf} (dnf)")
 
-    flatpak = int(subprocess.run("flatpak list --app --columns=application | wc -l", 
+    flatpak = int(run("flatpak list --app --columns=application | wc -l", 
     shell=True, capture_output=True, text=True).stdout.strip()); #flatpak=112
     if flatpak!=0: packages.append(f"{flatpak} (flatpak)")
 
@@ -195,7 +204,7 @@ if override_distro_icon is True: #else pass
         if item==your_distro: icons[0]=distros[item]
 
 #this is a LIST of every line to print
-info_lines=f'''{phrStyle}{somephrases[random.randint(0,len(somephrases)-1)]}{end}
+info_lines=f'''{phrStyle}{somephrases[randint(0,len(somephrases)-1)]}{end}
 {icons[0 ]}  {colStyle}Distro:{end}   {infoStyle}{get_os("name")}{end}
 {icons[1 ]}  {colStyle}Owner:{end}    {infoStyle}{get_host()} {get_user()}{end}
 {icons[2 ]}  {colStyle}Kernel:{end}   {infoStyle}{get_kern()}{end}
@@ -292,3 +301,7 @@ if __name__=="__main__":
                     else:
                         if color_block_position in ("left","off"): print(f"{spacer}   ")
                         elif color_block_position == "bottom": print(f"{end}")
+
+#timeEnd = time()
+#print(f"Execution time: {timeEnd - timeStart}")
+#fastest time: 0.035... seconds
