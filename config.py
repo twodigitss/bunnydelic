@@ -4,7 +4,8 @@
 show_phrase = True
 
 #Indent phrases to left instead right on custom ascii
-phraseToLeft = False
+#FIX
+phraseToLeft = True
 
 #Enable/disable color randomization
 randomize_colors = True
@@ -19,7 +20,7 @@ override_distro_icon = True
 ''' //--// STYLES
 =================================='''
 #Values: off, default, custom
-show_ascii = "default"
+show_ascii = "custom"
 
 #Values: "random" (as string) or any number (as integer) as an index inside an array
 #Examples: custom_ascii = "random" / custom_ascii = 1 / custom_ascii = 2 / etc.
@@ -27,7 +28,8 @@ show_ascii = "default"
 custom_ascii = "random"
 
 #Values "off", "left", "bottom", "random"
-color_block_position = "left"
+#FIX
+color_block_position = "bottom"
 
 #this is the phrase style, the entire line will be formated to:
 #values: normal, italic, bold, underline 
@@ -46,7 +48,21 @@ informationStyle = "normal"
 =================================='''
 #Displays set information of your choose in this specific order
 #Items: cpu,de,distro,gpu,host,kernel,model,owner,pkg,ram,shell,uptime,user
-display = ["distro","owner","kernel","shell","pkg","ram","uptime"]
+display = [
+    "distro",
+    "de",
+    "user",
+    "kernel",
+    "shell",
+    "ram",
+    "uptime",
+    #"cpu",
+    #"gpu",
+    #"host",
+    #"model",
+    #"owner",
+    #"pkg",
+]
 
 #Icons that are shown alsongside display variable 󰞅
 icons = ["󰟀","󰀎","󰒔","󰙀","󰏓","","󱑂","","󰾆","","󰘚","󰳣",""]

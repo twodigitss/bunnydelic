@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#from time import time
+from time import time
 from subprocess import run
 from os import path, getlogin, environ, popen
 from platform import uname
@@ -8,26 +8,20 @@ from socket import gethostname
 from sys import path as SysPath
 SysPath.append(f"{path.expanduser('~')}/.config/bunnydelic/"); 
 from config import *
-
-#merely for debugging
-#timeStart = time()
+from pathlib import Path
 
 # functions to fetch information
 def get_user(): return getlogin()
 def get_host(): return gethostname()
 def get_sh(): return environ.get('SHELL')
 def get_kern(): return f"{uname().release}"
+def get_de(): return environ.get('XDG_SESSION_DESKTOP')
 
-def get_de(): 
-    desktop = environ.get('XDG_CURRENT_DESKTOP')
-    session = environ.get('XDG_SESSION_DESKTOP')
-    if desktop: return desktop 
-    else: return session
-    
 def get_os():
-    return run(
-        "grep '^NAME=' /etc/os-release | awk -F '=' '{print $2}' | tr -d '\"'", 
-        shell=True, capture_output=True, text=True).stdout.strip()
+    with open('/etc/os-release') as f:
+            for line in f:
+                if line.startswith('NAME='):
+                    return line.split('=', 1)[1].strip().strip('"')
 
 def get_cpu():
     return run("lscpu | awk '/Model name/ {print $3, $4, $5, $6}'", 
@@ -54,47 +48,38 @@ def get_upt():
         return f"{uptime_hours} hours, {uptime_minutes} minutes"
 
 def get_pkg():
-    packages=[]
-    if path.exists('/etc/pacman.conf'):
-        pac=len(popen("pacman -Qq").readlines())
-        packages.append(f"{pac} (pacman)")
+    packages = []
 
-    elif path.exists('/etc/apt/sources.list') or path.exists('/etc/apt'): 
-       apt = run(['dpkg', '-l'], capture_output=True, text=True)
-       apt = len(apt.stdout.splitlines()) - 5; #substract header file
-       packages.append(f"{apt} (apt)")
+    # Check for Pacman packages
+    if Path('/etc/pacman.conf').exists():
+        try:
+            pacman_output = run(['pacman', '-Qq'], capture_output=True, text=True, check=True)
+            pac_count = len(pacman_output.stdout.splitlines())
+            packages.append(f"{pac_count} (pacman)")
+        except subprocess.CalledProcessError:
+            packages.append("")
 
-    elif path.exists('/etc/dnf/dnf.conf') or path.exists('/etc/yum'): 
-       dnf = run(['dnf', 'list', 'installed'], capture_output=True, text=True)
-       dnf = len(dnf.stdout.splitlines()) - 1; #substract header file
-       packages.append(f"{dnf} (dnf)")
+    # Check for APT packages
+    elif Path('/etc/apt/sources.list').exists() or Path('/etc/apt').exists():
+        try:
+            apt_output = run(['dpkg', '-l'], capture_output=True, text=True, check=True)
+            apt_count = len(apt_output.stdout.splitlines()) - 5  # Subtract header lines
+            packages.append(f"{apt_count} (apt)")
+        except subprocess.CalledProcessError:
+            packages.append("")
 
-    flatpak = int(run("flatpak list --app --columns=application | wc -l", 
-    shell=True, capture_output=True, text=True).stdout.strip()); #flatpak=112
-    if flatpak!=0: packages.append(f"{flatpak} (flatpak)")
+    # Check for DNF packages
+    elif Path('/etc/dnf/dnf.conf').exists() or Path('/etc/yum').exists():
+        try:
+            dnf_output = run(['dnf', 'list', 'installed'], capture_output=True, text=True, check=True)
+            dnf_count = len(dnf_output.stdout.splitlines()) - 1  # Subtract header lines
+            packages.append(f"{dnf_count} (dnf)")
+        except subprocess.CalledProcessError:
+            packages.append("")
 
-    return "".join([i+", " if (i!=0 and i!=packages[-1]) else i for i in packages])
+    return ", ".join(packages)
 
-#this part of the code was repeated and honestly looks kinda intimidating
-def assign_colorblocks():
-    global fg_column, info_column
-    if color_block_position =="left":
-        if not show_phrase:
-            if i < len(BGColorList): fg_column=f"{bg[BGColorList[i]]} {fg[FGColorList[i]]}";
-            else: fg_column=f'{bg["wht"]} {fg["wht"]}'
-        else: #if show_phrase is True
-            if i < len(BGColorList)+1: fg_column=f"{bg[BGColorList[i-1]]} {fg[FGColorList[i-1]]}"  
-            else: fg_column=f'{bg["wht"]} {fg["wht"]}'
-            
-    elif color_block_position in ("bottom","off"):
-        if not show_phrase: 
-            if i < len(BGColorList): fg_column=f"{fg[FGColorList[i]]}" 
-            else: fg_column=f'{end}'
-        else: #if show_phrase is True
-            if i < len(BGColorList)+1: fg_column=f"{fg[FGColorList[i-1]]}" 
-            else: fg_column=f'{end}'
-            
-    else: fg_column=""
+
 
 styles={ #used to format text (:
     "italic" :  "\033[3m",  "normal":   "", 
@@ -129,16 +114,38 @@ faces=[ #feel freee to add more if you want
 ]
 distros={ #Robotition suggested this, thank him :>
     "Arch Linux":"",        "Debian GNU/Linux":"",  "EndeavourOS":"",   "Manjaro Linux":"󱘊",     "Parrot":"",
-    "Ubuntu":"",            "Pop!_OS":"",           "Fedora Linux":"󰣛",        "Crystal Linux":"",     "Zorin OS":"",
+    "Ubuntu":"",            "Pop!_OS":"",           "Fedora Linux":"󰣛",  "Crystal Linux":"",     "Zorin OS":"",
     "Kali GNU/Linux":"",    "Rocky Linux":"",       "Linux Mint":"󰣭",    "AlmaLinux":"",         "MX Linux":"",
     "Archcraft":"",         "ArchLabs":"",          "ArcoLinux":"",     "Artix Linux":"",       "BigLinux":"",
     "CentOS Linux":"",      "Devuan GNU/Linux":"",  "elementary OS":"", "Garuda Linux":"",      "Loc-os":"",
-    "Parabola GNU/Linux-libre":"", "Hyperbola GNU/Linux-libre":"",
+    "Parabola GNU/Linux-libre":"", "Hyperbola GNU/Linux-libre":"",       "NixOS":"",
            
 }
 
 #MAIN METHOD
-if __name__=="__main__":
+def main() -> None:
+    global custom_ascii, color_block_position, FGColorList, BGColorList
+    #this part of the code was repeated and honestly looks kinda intimidating
+    def assign_colorblocks():
+        global fg_column, info_column
+        if color_block_position =="left":
+            if not show_phrase:
+                if i < len(BGColorList): fg_column=f"{bg[BGColorList[i]]} {fg[FGColorList[i]]}";
+                else: fg_column=f'{bg["wht"]} {fg["wht"]}'
+            else: #if show_phrase is True
+                if i < len(BGColorList)+1: fg_column=f"{bg[BGColorList[i-1]]} {fg[FGColorList[i-1]]}"  
+                else: fg_column=f'{bg["wht"]} {fg["wht"]}'
+                
+        elif color_block_position in ("bottom","off"):
+            if not show_phrase: 
+                if i < len(BGColorList): fg_column=f"{fg[FGColorList[i]]}" 
+                else: fg_column=f'{end}'
+            else: #if show_phrase is True
+                if i < len(BGColorList)+1: fg_column=f"{fg[FGColorList[i-1]]}" 
+                else: fg_column=f'{end}'
+                
+        else: fg_column=""
+
     end = "\033[0m"; #escape character to undo previous coloring
     asciiisdefault=True;  #was the default_ascii replaced?
 
@@ -146,15 +153,6 @@ if __name__=="__main__":
     phrStyle  = styles.get(phraseStyle)
     colStyle  = styles.get(prefixStyle)
     infoStyle = styles.get(informationStyle)
-
-    if show_phrase is False: phraseToLeft=False
-    else: phraseToLeft=True
-
-    #gets desired ascii by index (or "random" if wanted)
-    if custom_ascii == "random":
-        custom_ascii = choice(ascii_list)
-    else: #lets dont forget that custom_ascii also 
-        custom_ascii = ascii_list[custom_ascii]
 
     #sets color block position through parameters to accept random value
     if color_block_position == "random": 
@@ -172,25 +170,21 @@ if __name__=="__main__":
     BGColorList = FGColorList
     bgblocks="".join([bg[i] for i in BGColorList])
 
-    shuffle(faces)
-    c1 = fg[FGColorList[0]];  f1 = faces[0]
-    c2 = fg[FGColorList[1]];  f2 = faces[1]
-    c3 = fg[FGColorList[2]];  f3 = faces[2]
-    c4 = fg[FGColorList[3]];  f4 = faces[3]
+    #CUSTOM ASCII
+    if show_ascii == "custom":
+        #just a fix to something i dont remember
+        #and probably was an inconcistence
+        if show_phrase is False: phraseToLeft=False
+        else: phraseToLeft=True
 
-    #default ascii art (do not touch pls)
-    default_ascii=f'''
-(\\ /)    (\\ /)  
-( {f1})   ( {f2}) 
-c({c1}"{end})({c1}"{end})  c({c2}"{end})({c2}"{end})
-                
-(\\ /)    (\\ /)  
-( {f3})   ( {f4}) 
-c({c3}"{end})({c3}"{end})  c({c4}"{end})({c4}"{end})
-'''
+        #gets desired ascii by index (or "random" if wanted)
+        if custom_ascii == "random":
+            custom_ascii = choice(ascii_list)
+        else: #lets dont forget that custom_ascii also 
+            custom_ascii = ascii_list[custom_ascii]
 
-    if show_ascii == "custom": #if showascii=default: pass
-        if custom_ascii: #if customascii has not ascii image on it: pass
+        #if customascii has not ascii image on it: pass
+        if custom_ascii: 
             newascii: list = custom_ascii.strip().split('\n')
             max_length = max(len(line) for line in newascii)
             newFormat=[line.ljust(max_length, ' ') for line in newascii]; #!!!
@@ -200,10 +194,34 @@ c({c3}"{end})({c3}"{end})  c({c4}"{end})({c4}"{end})
                 default_ascii = "" + '\n'.join(newFormat) + '\n'
             asciiisdefault=False
 
+        #space filler to make indentation consistent
+        if asciiisdefault is False: spacer = " " * max(len(line) for line in default_ascii)
+
+    else:
+        #DEFAULT ASCII
+        shuffle(faces)
+        c1 = fg[FGColorList[0]];  f1 = faces[0]
+        c2 = fg[FGColorList[1]];  f2 = faces[1]
+        c3 = fg[FGColorList[2]];  f3 = faces[2]
+        c4 = fg[FGColorList[3]];  f4 = faces[3]
+        #default ascii art (do not touch pls)
+        #PD: i hate identation. i wish i could use curly braces
+        default_ascii=f'''
+(\\ /)    (\\ /)  
+( {f1})   ( {f2}) 
+c({c1}"{end})({c1}"{end})  c({c2}"{end})({c2}"{end})
+                
+(\\ /)    (\\ /)  
+( {f3})   ( {f4}) 
+c({c3}"{end})({c3}"{end})  c({c4}"{end})({c4}"{end})
+'''
+     
+    #DEFAULT ASCII
+    #else: spacer = " " * 16
+    spacer = " " * 16
+        #DEFAULT ASCII
     # Array with each life of ascii art and a custom auto-adjustable spacer
     ascii_lines= default_ascii.split('\n')
-    if asciiisdefault is False: spacer = " " * max(len(line) for line in ascii_lines)
-    else: spacer = " " * 16
 
     #replace stock icon with specific distro icon
     if override_distro_icon is True: #else pass
@@ -212,6 +230,7 @@ c({c3}"{end})({c3}"{end})  c({c4}"{end})({c4}"{end})
             if item==your_distro: icons[0]=distros[item]
 
     #this is a LIST of every line to print
+    #PD: i hate identation. i wish i could use curly braces
     info_lines=f'''{phrStyle}{choice(somephrases)}{end}
 {icons[0 ]}  {colStyle}Distro:{end}   {infoStyle}{get_os()}{end}
 {icons[1 ]}  {colStyle}Owner:{end}    {infoStyle}{get_host()} {get_user()}{end}
@@ -308,7 +327,11 @@ c({c3}"{end})({c3}"{end})  c({c4}"{end})({c4}"{end})
                         if color_block_position in ("left","off"): print(f"{spacer}   ")
                         elif color_block_position == "bottom": print(f"{end}")
 
-    #merely for debugging
-    #timeEnd = time()
-    #print(f"Execution time: {timeEnd - timeStart}")
-    #fastest time: 0.033704519271850586 seconds
+if __name__=="__main__":
+    #fastest time (and average time): 
+    #Execution time: 0.018695592880249023
+    timeStart = time()
+    main()
+    timeEnd = time()
+    print(f"Execution time: {timeEnd - timeStart}")
+    
