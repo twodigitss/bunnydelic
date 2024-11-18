@@ -4,7 +4,6 @@
 show_phrase = True
 
 #Indent phrases to left instead right on custom ascii
-#FIX
 phraseToLeft = True
 
 #Enable/disable color randomization
@@ -20,16 +19,14 @@ override_distro_icon = True
 ''' //--// STYLES
 =================================='''
 #Values: off, default, custom
-show_ascii = "custom"
+show_ascii = "default"
 
 #Values: "random" (as string) or any number (as integer) as an index inside an array
 #Examples: custom_ascii = "random" / custom_ascii = 1 / custom_ascii = 2 / etc.
-#Note: asciis are stored in ascii.py, add more/remove if you want
 custom_ascii = "random"
 
 #Values "off", "left", "bottom", "random"
-#FIX
-color_block_position = "bottom"
+color_block_position = "random"
 
 #this is the phrase style, the entire line will be formated to:
 #values: normal, italic, bold, underline 
