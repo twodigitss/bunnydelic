@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 from time import time
+#thanks RafaFonPessoa, idk if you meant this
+import subprocess 
 from subprocess import run
 from os import path, getlogin, environ, popen
 from platform import uname

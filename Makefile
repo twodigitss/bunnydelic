@@ -8,7 +8,8 @@ install:
 	@echo "Getting sudo access to create a binary"
 	@sudo cp source $(BINDIR)/$(fetchname)
 	@echo "Generating config file in .config/$(fetchname)..."
-	@mkdir $(DOTF)/$(fetchname) && cp config.py ascii.py $(DOTF)/$(fetchname)/
+# thank you RafaFonPessoa for letting me know!
+	@mkdir $(DOTF)/$(fetchname) && cp config.py $(DOTF)/$(fetchname)/
 	@echo "Done! Execute as $(fetchname)"
 
 uninstall:
