@@ -5,7 +5,7 @@ use std::io;
 mod command_list;
 use command_list::{
     battery, cpu, gpu, hardware,
-    operative_sys, packages
+    operative_sys, packages, ram,
 };
 
 //PROGRAM
@@ -22,6 +22,7 @@ fn main() {
     hardware::get_hardware();
     operative_sys::get_os();
     packages::get_packages();
+    ram::get_ram();
 }
 
 /*  EXAMPLE OF OUTPUTS

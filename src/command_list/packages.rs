@@ -5,7 +5,7 @@ use std::{
 };
 
 pub fn get_packages(){
-    // let packages: Vec<String> = Vec::new();
+    let mut packages_count: Vec<String> = Vec::new();
 
     //  TODO: manage a better encapsulation, adding the 
     //  commands even.
@@ -24,6 +24,8 @@ pub fn get_packages(){
     });
 
 
+    //TODO: this thing whenever i feel it.
+    //NOTE: every clause should push something to the packages_count thing...
     if os_pm == "Apt" {
         let output = Command::new("dpkg")
             .arg("-l")
@@ -50,10 +52,12 @@ pub fn get_packages(){
 
     } else if os_pm == "Nixos" {
         // Implement Nixos package manager logic here
+        packages_count.push("nixos issue".to_string());
     } else {
         println!("No supported package manager found.");
     } 
 
+    println!("Packages: {:?}", packages_count);
 
 
 }
