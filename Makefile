@@ -1,14 +1,15 @@
 BINDIR = /usr/bin
 DOTF = $(HOME)/.config
-fetchname=bunnydelic
+fetchname=bfch
 
 install:
 	@echo "Creating executable..."
+	@echo "Giving permissions to execute..."
 	@chmod 755 source
-	@echo "Getting sudo access to create a binary"
+	@echo "Getting sudo access to create a binary at /usr/bin/ directory..."
 	@sudo cp source $(BINDIR)/$(fetchname)
 	@echo "Generating config file in .config/$(fetchname)..."
-# thank you RafaFonPessoa for letting me know!
+	# thank you RafaFonPessoa for letting me know!
 	@mkdir $(DOTF)/$(fetchname) && cp config.py $(DOTF)/$(fetchname)/
 	@echo "Done! Execute as $(fetchname)"
 
